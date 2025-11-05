@@ -90,6 +90,27 @@ async function groupByPlatform(gameTiles) {
 
 registerGroupMethod("platform", "Platform", groupByPlatform)
 
+async function groupByAddedBy(gameTiles) {
+    let categories = []
+
+    for (gameTile of gameTiles) {
+        let addedBy = gameTile.getAttribute("addedBy")
+        let category = categories.find(e => e.displayName == addedBy)
+        if (!category) {
+            category = GroupMethod.Category(addedBy)
+            categories.push(category)
+        }
+
+        category.push(gameTile)
+    }
+
+    categories.sort((a, b) => a.displayName.toLowerCase() < b.displayName.toLowerCase()).reverse()
+
+    return categories
+}
+
+registerGroupMethod("addedBy", "Added By User", groupByAddedBy)
+
 async function addAddedByUserToTile(tile) {
     let name = tile.getAttribute("addedBy")
     let title = tile.querySelector('.gametitle')
