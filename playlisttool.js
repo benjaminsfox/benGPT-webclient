@@ -689,8 +689,7 @@ window.onload = function() {
     }
 
     urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.has("showGame"))
-    {
+    if (urlParams.has("showGame")) {
         populateViewGameModalWithGame(Number(urlParams.get("showGame")), "Game")
     }
 }
