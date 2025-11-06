@@ -157,7 +157,12 @@ async function addPlatformIconsToTile(tile) {
     let div = document.createElement("div")
     div.setAttribute("class", "d-flex justify-content-center")
     
-    for (platformid of gameFieldsMap.get(id).platforms) {
+    game = gameFieldsMap.get(id)
+
+    if (!game.platforms)
+        return
+
+    for (platformid of game.platforms) {
         let thisdiv = div.appendChild(document.createElement("div"))
         thisdiv.setAttribute("class", "mx-1")
         thisdiv.setAttribute("title", platformmetainfo.get(platformid).name)
