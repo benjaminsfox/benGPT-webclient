@@ -639,7 +639,6 @@ function SetNote(id, note) {
 }
 
 window.onload = function() {
-
     let myModalEl = document.getElementById('addGameModal')
     myModalEl.addEventListener('hidden.bs.modal', event => {
         resetAddGame()
@@ -663,6 +662,11 @@ window.onload = function() {
         resetViewGameModal()
     })
 
+    let notesEl = document.getElementById("notes")
+    notesEl.addEventListener('input', event => {
+        onNotesInput();
+    })
+
     for (method of sortMethods) {
         method.createDOMOption()
     }
@@ -682,6 +686,12 @@ window.onload = function() {
         (new bootstrap.Modal("#clientSettingsModal")).show()
     } else {
         refreshPlaylist();
+    }
+
+    urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.has("showGame"))
+    {
+        populateViewGameModalWithGame(Number(urlParams.get("showGame")), "Game")
     }
 }
 
@@ -1033,11 +1043,19 @@ function viewAddRemoveButtonClicked(button) {
     }
 }
 
+function onNotesInput() {
+    let notesControlEl = document.getElementById("notesControls")
+    setElementVisibility(notesControlEl, true)
+}
+
 async function viewCancelNoteButtonClicked(button) {
     let id = Number(button.getAttribute("gameId"))
     let note = document.querySelector("#notes")
 
     note.value = await GetNote(id);
+
+    let notesControlEl = document.getElementById("notesControls")
+    setElementVisibility(notesControlEl, false)
 }
 
 function viewSaveNoteButtonClicked(button) {
@@ -1045,18 +1063,26 @@ function viewSaveNoteButtonClicked(button) {
     let note = document.querySelector("#notes")
 
     SetNote(id, note.value)
+
+    let notesControlEl = document.getElementById("notesControls")
+    setElementVisibility(notesControlEl, false)
 }
 
 async function populateViewGameModal(viewButton) {
     let gameTile = viewButton.closest(".gametile")
+    let titleText = gameTile.querySelector(".gametitle").textContent
     let id = Number(gameTile.getAttribute("gameid"))
+    populateViewGameModalWithGame(id, titleText)
+}
+
+async function populateViewGameModalWithGame(id, titleText) {
     let modal = document.querySelector("#viewGameModal")
 
     resetViewGameModal()
     await (new bootstrap.Modal("#viewGameModal")).show()
 
     let title = modal.querySelector(".modal-title")
-    title.textContent = gameTile.querySelector(".gametitle").textContent
+    title.textContent = titleText
 
     let addButton = modal.querySelector('#addbutton')
     let removeButton = modal.querySelector('#removebutton')
@@ -1083,9 +1109,13 @@ async function populateViewGameModal(viewButton) {
     })
     
     let gameInfo = gameFieldsMap.get(id)
-    if (gameInfo)
+    if (gameInfo) {
+        if (gameInfo.name)
+            title.textContent = gameInfo.name
         if (gameInfo.url)
             modal.querySelector("#viewOnIGDB").setAttribute("href", gameInfo.url)
+    }
+
 
     let videos = await preloadVideos()
 
