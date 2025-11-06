@@ -254,7 +254,15 @@
                     <div class="modal-body">
                         <div class="container">
                             <h5>Server Address</h5>
-                            <input type="text" id="serverAddressInput" class="form-control form-control-md" placeholder="http://MyPlaylistServer.address">
+                            <div class="input-group flex-nowrap">
+                                <input type="text" id="serverAddressInput" class="form-control form-control-md" placeholder="http://MyPlaylistServer.address">
+                                <div class="dropdown">
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">Previously Used</button>
+                                    <ul class="dropdown-menu" id="previousServersDropdown">
+                                        
+                                    </ul>
+                                </div>
+                            </div>
                             <h5>User Display Name</h5>
                             <input type="text" id="userDisplayNameInput" class="form-control form-control-md" placeholder="User">
                         </div>

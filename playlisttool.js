@@ -639,6 +639,11 @@ window.onload = function() {
         cancelViewSettings()
     })
     
+    myModalEl = document.getElementById('clientSettingsModal')
+    myModalEl.addEventListener('shown.bs.modal', event => {
+        loadConfigFromLocalStorage()
+    })
+    
     myModalEl = document.getElementById('viewGameModal')
     myModalEl.addEventListener('hidden.bs.modal', event => {
         resetViewGameModal()
@@ -1285,23 +1290,19 @@ function saveClientSettings() {
     localStorage.setItem("playlistServerAddress", serverAddr);
     localStorage.setItem("userDisplayName", userName);
 
+    prevServers = JSON.parse(localStorage.getItem("previouslyUsedServers"))
+    if (prevServers == null) {
+        prevServers = []
+    }
+    prevServers = prevServers.filter(e => e != config.serveraddress)
+    prevServers.unshift(config.serveraddress)
+    while (prevServers.length > 5)
+        prevServers.pop()
+    localStorage.setItem("previouslyUsedServers", JSON.stringify(prevServers))
+
     loadConfigFromLocalStorage()
 
     refreshPlaylist();
-}
-
-function loadConfigFromLocalStorage() {
-    serverAddr = localStorage.getItem("playlistServerAddress")
-    if (serverAddr != null) {
-        config.serveraddress = serverAddr;
-    }
-    
-    userName = localStorage.getItem("userDisplayName")
-    if (userName != null) {
-        config.userName = userName;
-    }
-
-    return (serverAddr != null) && (userName != null);
 }
 
 function loadConfigFromLocalStorage() {
@@ -1321,8 +1322,24 @@ function loadConfigFromLocalStorage() {
         config.userName = "";
     }
 
+    prevServers = JSON.parse(localStorage.getItem("previouslyUsedServers"))
+    if (prevServers == null) {
+        prevServers = []
+    }
+
     document.querySelector("#serverAddressInput").value = config.serveraddress;
     document.querySelector("#userDisplayNameInput").value = config.userName;
 
+    prevServersDropdown = document.querySelector("#previousServersDropdown")
+    prevServersDropdown.innerHTML = "";
+
+    prevServers.forEach(e => {
+        prevServersDropdown.innerHTML += `<li><a class="dropdown-item" onclick="prevServerClicked(this)">${e}</a></li>`
+    })
+
     return (serverAddr != null) && (userName != null);
+}
+
+function prevServerClicked(item) {
+    document.querySelector("#serverAddressInput").value = item.textContent;
 }
