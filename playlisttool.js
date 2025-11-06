@@ -1,4 +1,4 @@
-var config = {};
+var config = { playlistName: "playlist" };
 
 var registeredPlaylistIds = []
 
@@ -496,7 +496,7 @@ async function refreshPlaylist() {
     response = null;
 
     try {
-        response = await fetch(config.serveraddress, {
+        response = await fetch(`${config.serveraddress}/${config.playlistName}`, {
             method: 'GET'
         });
     } catch (e) {
@@ -553,6 +553,7 @@ function removeGame(id, title) {
             'Content-Type' : 'application/json'
         },
         body: JSON.stringify({
+            "playlist" : config.playlistName,
             "op" : "sub",
             "id" : id
         })
@@ -571,6 +572,7 @@ function addGame(id, title) {
             'Content-Type' : 'application/json'
         },
         body: JSON.stringify({
+            "playlist" : config.playlistName,
             "op" : "add",
             "id" : id,
             "user" : config.userName
@@ -590,6 +592,7 @@ function moveBefore(firstId, secondId) {
             'Content-Type' : 'application/json'
         },
         body: JSON.stringify({
+            "playlist" : config.playlistName,
             "op" : "moveBefore",
             "id1" : firstId,
             "id2" : secondId
@@ -609,6 +612,7 @@ async function GetNote(id) {
             'Content-Type' : 'application/json'
         },
         body: JSON.stringify({
+            "playlist" : config.playlistName,
             "op" : "getNote",
             "id" : id
         })
@@ -626,6 +630,7 @@ function SetNote(id, note) {
             'Content-Type' : 'application/json'
         },
         body: JSON.stringify({
+            "playlist" : config.playlistName,
             "op" : "setNote",
             "id" : id,
             "note" : note
@@ -1295,9 +1300,21 @@ async function spreadsheetGen(gameId, platformSlug) {
 function saveClientSettings() {
     serverAddr = document.querySelector("#serverAddressInput").value;
     userName = document.querySelector("#userDisplayNameInput").value;
+    playlistName = document.querySelector("#playlistNameInput").value;
 
     localStorage.setItem("playlistServerAddress", serverAddr);
     localStorage.setItem("userDisplayName", userName);
+    localStorage.setItem("playlistName", playlistName);
+
+    prevPlaylists = JSON.parse(localStorage.getItem("previouslyUsedPlaylists"))
+    if (prevPlaylists == null) {
+        prevPlaylists = []
+    }
+    prevPlaylists = prevPlaylists.filter(e => e != config.playlistName)
+    prevPlaylists.unshift(config.playlistName)
+    while (prevPlaylists.length > 5)
+        prevPlaylists.pop()
+    localStorage.setItem("previouslyUsedPlaylists", JSON.stringify(prevPlaylists))
 
     prevServers = JSON.parse(localStorage.getItem("previouslyUsedServers"))
     if (prevServers == null) {
@@ -1330,14 +1347,28 @@ function loadConfigFromLocalStorage() {
     else {
         config.userName = "";
     }
+    
+    playlistName = localStorage.getItem("playlistName")
+    if (playlistName != null) {
+        config.playlistName = playlistName;
+    }
+    else {
+        config.playlistName = "";
+    }
 
     prevServers = JSON.parse(localStorage.getItem("previouslyUsedServers"))
     if (prevServers == null) {
         prevServers = []
     }
 
+    prevPlaylists = JSON.parse(localStorage.getItem("previouslyUsedPlaylists"))
+    if (prevPlaylists == null) {
+        prevPlaylists = []
+    }
+
     document.querySelector("#serverAddressInput").value = config.serveraddress;
     document.querySelector("#userDisplayNameInput").value = config.userName;
+    document.querySelector("#playlistNameInput").value = config.playlistName;
 
     prevServersDropdown = document.querySelector("#previousServersDropdown")
     prevServersDropdown.innerHTML = "";
@@ -1346,9 +1377,20 @@ function loadConfigFromLocalStorage() {
         prevServersDropdown.innerHTML += `<li><a class="dropdown-item" onclick="prevServerClicked(this)">${e}</a></li>`
     })
 
-    return (serverAddr != null) && (userName != null);
+    prevPlaylistsDropdown = document.querySelector("#previousPlaylistsDropdown")
+    prevPlaylistsDropdown.innerHTML = "";
+
+    prevPlaylists.forEach(e => {
+        prevPlaylistsDropdown.innerHTML += `<li><a class="dropdown-item" onclick="prevPlaylistClicked(this)">${e}</a></li>`
+    })
+
+    return (serverAddr != null) && (userName != null) && (playlistName != null);
 }
 
 function prevServerClicked(item) {
     document.querySelector("#serverAddressInput").value = item.textContent;
+}
+
+function prevPlaylistClicked(item) {
+    document.querySelector("#playlistNameInput").value = item.textContent;
 }
