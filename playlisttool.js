@@ -963,7 +963,20 @@ function getLinkButton(url) {
 
 }
 
+function tryLoadViewSettings() {
+    let stored = localStorage.getItem("viewSettings")
+    if (stored != null) {
+        viewSettings = JSON.parse(stored);
+    }
+}
+
+function saveViewSettings() {
+    localStorage.setItem("viewSettings", JSON.stringify(viewSettings))
+}
+
 function cancelViewSettings() {
+    tryLoadViewSettings();
+
     document.querySelector('#groupby').value = viewSettings.groupBy;
     document.querySelector("#sortby").value = viewSettings.sortBy;
 
@@ -990,6 +1003,8 @@ function applyViewSettings() {
         if (checkbox.checked)
             viewSettings.showfields.push(checkbox.getAttribute("showfield"))
     }
+
+    saveViewSettings();
 
     refreshPlaylist()
 }
