@@ -493,9 +493,18 @@ async function refreshPlaylist() {
     setElementVisibility(spinner, true)
     setElementVisibility(gametilecontainer, false)
     
-    response = await fetch(config.serveraddress, {
-        method: 'GET'
-    });
+    response = null;
+
+    try {
+        response = await fetch(config.serveraddress, {
+            method: 'GET'
+        });
+    } catch (e) {
+        if (e instanceof TypeError) {
+            alert("The server could not be reached. Perhaps your browser is blocking it due to my bad SSL certificate? Pressing ok will attempt to connect to the server directly. If your browser warns you, press the 'Take me there anyway' button, then come back here.")
+            location.href = config.serveraddress
+        } 
+    }
     
     if (response.ok) {
         json = await response.json()
