@@ -1091,7 +1091,7 @@ async function populateViewGameModal(viewButton) {
 
 async function populateViewGameModalWithGame(id, titleText) {
     let modal = document.querySelector("#viewGameModal")
-
+    modal.setAttribute("gameId", id)
     resetViewGameModal()
     await (new bootstrap.Modal("#viewGameModal")).show()
 
@@ -1437,4 +1437,12 @@ function prevServerClicked(item) {
 
 function prevPlaylistClicked(item) {
     document.querySelector("#playlistNameInput").value = item.textContent;
+}
+
+function copyViewGameLink() {
+    let modal = document.querySelector("#viewGameModal")
+    let gameId = modal.getAttribute("gameId");
+
+    let string = window.location.origin + window.location.pathname + `?showGame=${gameId}`
+    navigator.clipboard.writeText(string)
 }

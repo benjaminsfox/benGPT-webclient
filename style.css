@@ -244,3 +244,8 @@
     --bs-btn-disabled-bg: hsl(213, 0%, 10%);
     --bs-btn-disabled-border-color: hsl(213, 0%, 10%);
 }
+
+.btn-copy {
+    --bs-btn-border-color: transparent;
+    --bs-btn-active-border-color: transparent;
+}
