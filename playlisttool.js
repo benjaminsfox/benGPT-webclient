@@ -1203,17 +1203,6 @@ async function populateViewGameModalWithGame(id, titleText) {
         }
     }
 
-    hltb = (await hltb).get(id)
-    if (hltb) {
-        let formatter = new Intl.DurationFormat("en", {style: "narrow"})
-        let format = (h => h == 0 ? "-" : formatter.format({hours:Math.round(h)}))
-
-        modal.querySelector('#howlongtobeat').setAttribute("href", hltb.url)
-        modal.querySelector('#hltbMain').textContent = format(hltb.main)
-        modal.querySelector('#hltbMainExtra').textContent = format(hltb.main_extra)
-        modal.querySelector('#hltbCompletionist').textContent = format(hltb.completionist)
-    }
-
     let platformMetaInfo = await preloadPlatformMetaInfo()
     if (gameInfo.platforms) {
         let platforms = modal.querySelector('#platforms')
@@ -1277,6 +1266,17 @@ async function populateViewGameModalWithGame(id, titleText) {
                 }
             }
         }
+    }
+
+    hltb = (await hltb).get(id)
+    if (hltb) {
+        let formatter = new Intl.DurationFormat("en", {style: "narrow"})
+        let format = (h => h == 0 ? "-" : formatter.format({hours:Math.round(h)}))
+
+        modal.querySelector('#howlongtobeat').setAttribute("href", hltb.url)
+        modal.querySelector('#hltbMain').textContent = format(hltb.main)
+        modal.querySelector('#hltbMainExtra').textContent = format(hltb.main_extra)
+        modal.querySelector('#hltbCompletionist').textContent = format(hltb.completionist)
     }
 }
 
