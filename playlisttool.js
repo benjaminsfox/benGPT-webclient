@@ -1259,9 +1259,9 @@ async function populateViewGameModalWithGame(id, titleText) {
             let div = franchiseCard.appendChild(document.createElement("div"))
             div.setAttribute("class", "d-flex flex-nowrap overflow-auto")
 
-            for (id of franchise.games) {
-                if (gameFieldsMap.has(id)) {
-                    g = new GameInfo(id, gameFieldsMap.get(id).name, Date.now())
+            for (gid of franchise.games) {
+                if (gameFieldsMap.has(gid)) {
+                    g = new GameInfo(gid, gameFieldsMap.get(gid).name, Date.now())
                     div.appendChild(g.createTile(true))
                 }
             }
