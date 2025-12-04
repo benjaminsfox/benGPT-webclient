@@ -60,10 +60,14 @@ class GameInfo {
         gameTile.setAttribute("class", "gametile mx-2 my-2")
         gameTile.setAttribute("gameId", this.id)
         gameTile.setAttribute("addedBy", this.addedBy)
-        gameTile.setAttribute("draggable", true)
-        gameTile.setAttribute("ondragstart", `dragstartHandler(event, ${this.id})`)
-        gameTile.setAttribute("ondrop", `dropHandler(event, ${this.id})`)
-        gameTile.setAttribute("ondragover", `dragoverHandler(event)`)
+
+        if (!forAdd) {
+            gameTile.setAttribute("draggable", true)
+            gameTile.setAttribute("ondragstart", `dragstartHandler(event, ${this.id})`)
+            gameTile.setAttribute("ondrop", `dropHandler(event, ${this.id})`)
+            gameTile.setAttribute("ondragover", `dragoverHandler(event)`)
+        }
+        
         let card = gameTile.appendChild(document.createElement("div"))
         card.setAttribute("class", "card shadow-sm")
         let image = card.appendChild(document.createElement("img"))
