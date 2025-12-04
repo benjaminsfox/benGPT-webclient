@@ -83,7 +83,7 @@ async function groupByPlatform(gameTiles) {
         gameTile.remove()
     }
 
-    categories.sort((a, b) => a.displayName.toLowerCase() < b.displayName.toLowerCase()).reverse()
+    categories.sort()
 
     return categories
 }
@@ -104,7 +104,7 @@ async function groupByAddedBy(gameTiles) {
         category.push(gameTile)
     }
 
-    categories.sort((a, b) => a.displayName.toLowerCase() < b.displayName.toLowerCase()).reverse()
+    categories.sort()
 
     return categories
 }

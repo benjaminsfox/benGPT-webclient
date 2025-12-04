@@ -861,6 +861,9 @@ class GroupMethod {
             tiles : [],
             push : function(tile) {
                 this.tiles.push(tile)
+            },
+            toString : function() {
+                return this.displayName
             }
         }
     }
