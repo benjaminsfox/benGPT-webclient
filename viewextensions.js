@@ -2,7 +2,9 @@ async function sortAlphabetically(gameTiles) {
     gameTiles.sort((a, b) => {
         let atitle = a.querySelector(".gametitle").textContent
         let btitle = b.querySelector(".gametitle").textContent
-        return atitle < btitle
+        if (atitle > btitle) return -1;
+        if (atitle < btitle) return 1;
+        return 0
     })
 }
 
@@ -13,7 +15,11 @@ async function sortByReleased(gameTiles) {
     gameTiles.sort((a, b) => {
         let arelease = gameFieldsMap.get(Number(a.getAttribute("gameid"))).first_release_date
         let brelease = gameFieldsMap.get(Number(b.getAttribute("gameid"))).first_release_date
-        return arelease < brelease || brelease == 'TBA'
+        if (brelease == 'TBA') return 1;
+        if (arelease == 'TBA') return -1;
+        if (arelease < brelease) return 1;
+        if (arelease > brelease) return -1;
+        return 0;
     })
 }
 
@@ -27,7 +33,9 @@ function sortByHltb(field) {
             let bTime = hltbinfo.get(Number(b.getAttribute("gameid")))[field]
             if (aTime == 0) aTime = Number.POSITIVE_INFINITY
             if (bTime == 0) bTime = Number.POSITIVE_INFINITY
-            return aTime < bTime;
+            if (aTime > bTime) return -1;
+            if (aTime < bTime) return 1;
+            return 0;
         })
     }
 }
