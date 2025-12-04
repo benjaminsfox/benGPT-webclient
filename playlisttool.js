@@ -67,7 +67,7 @@ class GameInfo {
             gameTile.setAttribute("ondrop", `dropHandler(event, ${this.id})`)
             gameTile.setAttribute("ondragover", `dragoverHandler(event)`)
         }
-        
+
         let card = gameTile.appendChild(document.createElement("div"))
         card.setAttribute("class", "card shadow-sm")
         let image = card.appendChild(document.createElement("img"))
@@ -523,19 +523,20 @@ async function refreshPlaylist() {
         } 
     }
         
-    await addAdditionalDataForPlaylist()    
     await doViewSettings()
-    
+
     setElementVisibility(spinner, false)
     setElementVisibility(gametilecontainer, true)
+    
+    addAdditionalDataForPlaylist()    
 }
 
 async function addAdditionalDataForPlaylist() {
     let gametilecontainer = document.getElementById("gametilecontainer")
     let gameTiles = gametilecontainer.getElementsByClassName('gametile')
 
-    for (tile of gameTiles) {
-        for (visual of gameTileVisuals)
+    for (var tile of gameTiles) {
+        for (var visual of gameTileVisuals)
             await visual.applyPlaylist(tile)
     }
 }
@@ -544,8 +545,8 @@ async function addAdditionalDataForAdd() {
     let gametilecontainer = document.getElementById("addgametilecontainer")
     let gameTiles = gametilecontainer.getElementsByClassName('gametile')
 
-    for (tile of gameTiles) {
-        for (visual of gameTileVisuals)
+    for (var tile of gameTiles) {
+        for (var visual of gameTileVisuals)
             await visual.applyAdd(tile)
     }
 }
@@ -876,7 +877,7 @@ class GroupMethod {
             categoryHeader.innerHTML = `<h1><b>${category.displayName}</b></h1>`
             gametilecontainer.appendChild(categoryHeader)
 
-            for (tile of category.tiles) {
+            for (var tile of category.tiles) {
                 gametilecontainer.appendChild(tile)
             }
         });
