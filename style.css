@@ -1,10 +1,11 @@
 :root {
     --gametile-size: 200px;
+    --gametile-aspect: 1;
 }
 
 .gametile {
-    height: var(--gametile-size);
-    aspect-ratio: 1;
+    width: var(--gametile-size);
+    aspect-ratio: var(--gametile-aspect);
     display: flex;
 }
 

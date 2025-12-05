@@ -260,6 +260,11 @@
                                     </svg>
                                 </button>
                             </div>
+                            <h5>Display Tiles As</h5>
+                            <select class="form-select" id="displaytilesas" aria-label="Default select example">
+                                <option value="crop" selected>Cropped</option>
+                                <option value="full" selected>Full</option>
+                            </select>
                             <div class="d-flex py-2">
                                 <label for="customRange1" class="form-label px-2 text-nowrap">Tile Size: 200</label>
                                 <input type="range" class="form-range" id="tileSizeInput" min="200" max="500" value="200" oninput="setTileSize(this)">

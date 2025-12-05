@@ -792,6 +792,7 @@ var viewSettings = {
     sortBy : "",
     sortDir : "asc",
     showfields : [],
+    tileDisplay : "crop",
     tileSize : 200
 }
 
@@ -982,6 +983,12 @@ function tryLoadViewSettings() {
         viewSettings.tileSize = 200;
     }
 
+    if (viewSettings.tileDisplay === undefined) {
+        viewSettings.tileDisplay = "crop";
+    }
+
+    applyTileDisplaySetting()
+    
     let tileSizeInput = document.querySelector("#tileSizeInput")
     tileSizeInput.value = viewSettings.tileSize
     setTileSize(tileSizeInput)
@@ -996,6 +1003,7 @@ function cancelViewSettings() {
 
     document.querySelector('#groupby').value = viewSettings.groupBy;
     document.querySelector("#sortby").value = viewSettings.sortBy;
+    document.querySelector("#displaytilesas").value = viewSettings.tileDisplay;
 
     let sortDirButton = document.querySelector("#sortdirectionbtn")
     let isAsc = viewSettings.sortDir == "asc"
@@ -1008,12 +1016,22 @@ function cancelViewSettings() {
     }
 }
 
+function applyTileDisplaySetting() {
+    if (viewSettings.tileDisplay == "crop") {
+        document.documentElement.style.setProperty("--gametile-aspect", `1`);
+    }
+    else {
+        document.documentElement.style.setProperty("--gametile-aspect", `260/350`);
+    }
+}
+
 function applyViewSettings() {
     // check for group by released
     viewSettings.groupBy = document.querySelector('#groupby').value;
     viewSettings.sortBy = document.querySelector('#sortby').value;
     viewSettings.sortDir = document.querySelector("#sortdirectionbtn").getAttribute("value");
-    
+    viewSettings.tileDisplay = document.querySelector("#displaytilesas").value;
+
     viewSettings.showfields = []
     //get showfields
     for (checkbox of document.querySelector("#showfields").getElementsByTagName("input")) {
@@ -1021,8 +1039,8 @@ function applyViewSettings() {
             viewSettings.showfields.push(checkbox.getAttribute("showfield"))
     }
 
+    applyTileDisplaySetting();
     saveViewSettings();
-
     refreshPlaylist()
 }
 
