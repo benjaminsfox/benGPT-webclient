@@ -136,6 +136,7 @@ class GameInfo {
 }
 
 function setTileSize(tileSizeInput) {
+    viewSettings.tileSize = tileSizeInput.value;
     document.documentElement.style.setProperty("--gametile-size", `${tileSizeInput.value}px`);
     tileSizeInput.parentElement.querySelector('label').textContent = `Tile Size: ${tileSizeInput.value}`
 }
@@ -790,7 +791,8 @@ var viewSettings = {
     groupBy : "",
     sortBy : "",
     sortDir : "asc",
-    showfields : []
+    showfields : [],
+    tileSize : 200
 }
 
 var sortMethods = []
@@ -975,6 +977,14 @@ function tryLoadViewSettings() {
     if (stored != null) {
         viewSettings = JSON.parse(stored);
     }
+
+    if (viewSettings.tileSize === undefined) {
+        viewSettings.tileSize = 200;
+    }
+
+    let tileSizeInput = document.querySelector("#tileSizeInput")
+    tileSizeInput.value = viewSettings.tileSize
+    setTileSize(tileSizeInput)
 }
 
 function saveViewSettings() {
@@ -1453,4 +1463,25 @@ function copyViewGameLink() {
 
     let string = window.location.origin + window.location.pathname + `?showGame=${gameId}`
     navigator.clipboard.writeText(string)
+}
+
+async function screenshotPlaylist() {
+    let loadingModal = (new bootstrap.Modal("#loadingModal"))
+    loadingModal.show();
+
+    let container = document.querySelector("#gametilecontainer");
+    let columns = Math.trunc(Math.sqrt(container.children.length));
+
+    container.setAttribute("style", `width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px`)
+    dataUrl = await domtoimage.toPng(container, {bgcolor:"#212529"})
+    
+    const now = new Date();
+    var link = document.createElement('a');
+    link.download = `Playlist-${config.playlistName}-${now.getMonth()}-${now.getDay()}-${now.getFullYear()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.png`;
+    link.href = dataUrl;
+    link.click()
+
+    container.setAttribute("style", "");
+
+    loadingModal.hide();
 }
