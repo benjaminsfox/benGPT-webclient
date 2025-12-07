@@ -253,7 +253,14 @@ async function preloadReleaseInfo() {
     })
 }
 
-async function getPopular(num = 30, pop_type = Math.floor(Math.random() * 8)) {
+last_pop_type = 1;
+async function getPopular(offset = 0, num = 30, pop_type = 1 + Math.floor(Math.random() * 8)) {
+    if (offset > 0) {
+        pop_type = last_pop_type;
+    }
+    last_pop_type = pop_type;
+
+
     response = await fetch(config.serveraddress, {
         method: 'POST',
         headers: {
@@ -262,7 +269,8 @@ async function getPopular(num = 30, pop_type = Math.floor(Math.random() * 8)) {
         body: JSON.stringify({
             "op" : "getPopular",
             "num" : num,
-            "pop_type" : pop_type
+            "pop_type" : pop_type,
+            "offset" : offset
         })
     });
 
@@ -537,6 +545,13 @@ async function addAdditionalDataForPlaylist() {
     let gameTiles = gametilecontainer.getElementsByClassName('gametile')
 
     for (var tile of gameTiles) {
+        let visuals = tile.querySelector("#gameTileVisuals");
+        if (visuals) {
+            visuals.outerHTML = ""
+        }
+        let visDiv = document.createElement("div")
+        visDiv.setAttribute("id", "gameTileVisuals")
+        tile.querySelector(".gametitle").after(visDiv)
         for (var visual of gameTileVisuals)
             await visual.applyPlaylist(tile)
     }
@@ -547,6 +562,13 @@ async function addAdditionalDataForAdd() {
     let gameTiles = gametilecontainer.getElementsByClassName('gametile')
 
     for (var tile of gameTiles) {
+        let visuals = tile.querySelector("#gameTileVisuals");
+        if (visuals) {
+            visuals.outerHTML = ""
+        }
+        let visDiv = document.createElement("div")
+        visDiv.setAttribute("id", "gameTileVisuals")
+        tile.querySelector(".gametitle").after(visDiv)
         for (var visual of gameTileVisuals)
             await visual.applyAdd(tile)
     }
@@ -737,9 +759,11 @@ async function createAddGameTiles(gameInfos) {
     addAdditionalDataForAdd()
 }
 
-async function doSearchQuery(query) {
-    let addgametilecontainer = document.querySelector("#addgametilecontainer")
-    addgametilecontainer.innerHTML = ''
+async function doSearchQuery(query, offset = 0) {
+    if (offset == 0) {
+        let addgametilecontainer = document.querySelector("#addgametilecontainer")
+        addgametilecontainer.innerHTML = ''
+    }
 
     let spinner = document.getElementById("addgame-loading-spinner")
     spinner.setAttribute("class", "")
@@ -751,7 +775,8 @@ async function doSearchQuery(query) {
         },
         body: JSON.stringify({
             "op" : "search",
-            "query" : query
+            "query" : query,
+            "offset" : offset
         })
     });
 
@@ -771,13 +796,35 @@ function UpdateAddSearch() {
     doSearchQuery(query)
 }
 
+loadNextLocked = false;
+async function LoadNextAddGamePage() {
+    if (!loadNextLocked) {
+        loadNextLocked = true;
+        
+        let query = document.querySelector("#addSearchInput").value;
+        if (query == "") {
+            // add more popular
+            await addPopularGames(document.querySelector("#addgametilecontainer").childElementCount)
+        }
+        else {
+            // add more from search
+            await doSearchQuery(query, document.querySelector("#addgametilecontainer").childElementCount)
+        }
+
+        loadNextLocked = false;
+    }
+}
+
 function resetAddGame() {
     document.querySelector("#addgametilecontainer").textContent='';
     document.querySelector("#addSearchInput").value = '';
 }
 
-async function initAddGame() {
-    popularIds = await getPopular();
+async function addPopularGames(offset = 0) {
+    let spinner = document.getElementById("addgame-loading-spinner")
+    spinner.setAttribute("class", "")
+
+    popularIds = await getPopular(offset);
 
     let body = { Games : popularIds.map(e => {return {id : e}})}
     preloadCovers(body)
@@ -785,6 +832,21 @@ async function initAddGame() {
     preloadGameFields(popularIds, ['name']).then(() => {
         createAddGameTiles(popularIds.map(id => new GameInfo(id, gameFieldsMap.get(id).name, Date.now())))
     });
+
+    spinner = document.getElementById("addgame-loading-spinner")
+    spinner.setAttribute("class", "visually-hidden")
+}
+
+async function initAddGame() {
+    await addPopularGames()
+}
+
+function onAddGameScrollEnd(divEl) {
+    if (divEl.scrollTop >= divEl.scrollTopMax) {
+        console.log("scrolled to bottom!")
+
+        LoadNextAddGamePage();
+    }
 }
 
 var viewSettings = {

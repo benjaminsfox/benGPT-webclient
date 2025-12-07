@@ -121,14 +121,14 @@ registerGroupMethod("addedBy", "Added By User", groupByAddedBy)
 
 async function addAddedByUserToTile(tile) {
     let name = tile.getAttribute("addedBy")
-    let title = tile.querySelector('.gametitle')
+    let visuals = tile.querySelector("#gameTileVisuals");
     
     let user = document.createElement("div")
     user.setAttribute("class", `text-center text-truncate px-2`)
     
     user.textContent = `Added by ${name}`
 
-    title.after(user)
+    visuals.appendChild(user)
 }
 
 registerGameTileVisual("addedBy", "Added By User", addAddedByUserToTile)
@@ -137,7 +137,7 @@ async function addReleaseDateToTile(tile) {
     await preloadReleaseInfo()
     
     let id = Number(tile.getAttribute("gameid"))
-    let title = tile.querySelector('.gametitle')
+    let visuals = tile.querySelector("#gameTileVisuals");
     
     let date = document.createElement("div")
     date.setAttribute("class", `gamedate text-center text-truncate px-2`)
@@ -152,7 +152,7 @@ async function addReleaseDateToTile(tile) {
         }
     }
 
-    title.after(date)
+    visuals.appendChild(date)
 }
 
 registerGameTileVisual("releasedate", "Release Date", addReleaseDateToTile)
@@ -181,7 +181,8 @@ async function addPlatformIconsToTile(tile) {
     children.sort((a, b) => a.getAttribute("title").toLowerCase() < b.getAttribute("title").toLowerCase()).reverse()
     children.forEach(e => div.appendChild(e))
 
-    tile.querySelector(".gametitle").after(div)
+    let visuals = tile.querySelector("#gameTileVisuals");
+    visuals.appendChild(div)
 }
 
 registerGameTileVisual("platform", "Platforms", addPlatformIconsToTile, true, true)
@@ -211,7 +212,8 @@ async function addTimeToBeatToTile(tile) {
         button.setAttribute("class", "btn btn-sm btn-danger")
         button.textContent = format(hltb.completionist)
 
-        tile.querySelector(".gametitle").after(div)
+        let visuals = tile.querySelector("#gameTileVisuals");
+        visuals.appendChild(div)
     }
 }
 
