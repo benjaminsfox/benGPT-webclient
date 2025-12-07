@@ -176,7 +176,7 @@ async function preloadCovers(rawJson) {
     if (response.ok) {
         body = await response.json()
         for (pair of body['Covers']) {
-            coverMap.set(pair[0], "https:" + pair[1].replace("t_thumb", "t_cover_big"))
+            coverMap.set(pair[0], "https:" + pair[1].replace("t_thumb", `t_cover_big${viewSettings.tileSize <= 250 ? "" : "_2x"}`))
             updateImageForGameId(pair[0])
         }
 
@@ -1037,6 +1037,10 @@ function applyViewSettings() {
     for (checkbox of document.querySelector("#showfields").getElementsByTagName("input")) {
         if (checkbox.checked)
             viewSettings.showfields.push(checkbox.getAttribute("showfield"))
+    }
+
+    if (coverMap.size > 0 && coverMap.values().next().value.includes("t_cover_big_2x") != viewSettings.tileSize > 250) {
+        coverMap.clear();
     }
 
     applyTileDisplaySetting();
