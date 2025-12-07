@@ -793,7 +793,13 @@ async function doSearchQuery(query, offset = 0) {
 
 function UpdateAddSearch() {
     let query = document.querySelector("#addSearchInput").value;
-    doSearchQuery(query)
+    if (query == "") {
+        resetAddGame()
+        addPopularGames()
+    }
+    else {
+        doSearchQuery(query)
+    }
 }
 
 loadNextLocked = false;
