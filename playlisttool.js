@@ -1562,7 +1562,7 @@ async function screenshotPlaylist() {
     let container = document.querySelector("#gametilecontainer");
     let columns = Math.trunc(Math.sqrt(container.children.length));
 
-    container.setAttribute("style", `width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px`)
+    container.setAttribute("style", `max-width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px !important`)
     dataUrl = await domtoimage.toPng(container, {bgcolor:"#212529"})
     
     const now = new Date();

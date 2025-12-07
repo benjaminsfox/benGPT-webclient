@@ -3,6 +3,10 @@
     --gametile-aspect: 1;
 }
 
+#gametilecontainer {
+    max-width: calc(1350px - mod(1350px, var(--gametile-size) + 16px));
+}
+
 .gametile {
     width: var(--gametile-size);
     aspect-ratio: var(--gametile-aspect);
