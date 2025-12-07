@@ -1565,7 +1565,7 @@ async function screenshotPlaylist() {
         columns = Math.trunc(columns * (350/260));
     }
 
-    container.setAttribute("style", `max-width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px !important`)
+    container.setAttribute("style", `max-width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px !important; width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px !important`)
     dataUrl = await domtoimage.toPng(container, {bgcolor:"#212529"})
     
     const now = new Date();
