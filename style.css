@@ -8,6 +8,7 @@
 }
 
 .gametile {
+    min-width: var(--gametile-size);
     width: var(--gametile-size);
     aspect-ratio: var(--gametile-aspect);
     display: flex;
