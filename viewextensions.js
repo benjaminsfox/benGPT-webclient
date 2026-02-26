@@ -29,8 +29,10 @@ function sortByHltb(field) {
     return async function(gameTiles) {
         let hltbinfo = await preloadHowLongToBeat()
         gameTiles.sort((a, b) => {
-            let aTime = hltbinfo.get(Number(a.getAttribute("gameid")))[field]
-            let bTime = hltbinfo.get(Number(b.getAttribute("gameid")))[field]
+            let aTime = hltbinfo.get(Number(a.getAttribute("gameid")))
+            let bTime = hltbinfo.get(Number(b.getAttribute("gameid")))
+            aTime = aTime ? aTime[field] : 0;
+            bTime = bTime ? bTime[field] : 0;
             if (aTime == 0) aTime = Number.POSITIVE_INFINITY
             if (bTime == 0) bTime = Number.POSITIVE_INFINITY
             if (aTime > bTime) return -1;
