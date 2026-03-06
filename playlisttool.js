@@ -1578,3 +1578,16 @@ async function screenshotPlaylist() {
 
     loadingModal.hide();
 }
+
+function viewRandomGame() {
+    let gametilecontainer = document.getElementById("gametilecontainer")
+    let gameTiles = [...gametilecontainer.getElementsByClassName("gametile")]
+
+    gameTiles = gameTiles.filter(e => e.getAttribute("addedBy") != " Current" && e.getAttribute("addedBy") != "~Past Games~")
+
+    let index = Math.floor(Math.random() * gameTiles.length)
+    let gameTile = gameTiles[index]
+    let titleText = gameTile.querySelector(".gametitle").textContent
+    let id = Number(gameTile.getAttribute("gameid"))
+    populateViewGameModalWithGame(id, titleText)
+}
