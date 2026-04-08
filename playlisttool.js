@@ -321,6 +321,30 @@ async function preloadWebsites(ids = [...document.getElementsByClassName("gameti
     }
 }
 
+async function preloadPrice(id) {
+    response = await fetch(config.serveraddress, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "op" : "getPrice",
+            "id" : id
+        })
+    });
+
+    if (response.ok) {
+        body = await response.json()
+        let info = gameFieldsMap.get(id)
+        if (!info) {
+            info = {}
+        }
+        info['price'] = body['Price']
+        gameFieldsMap.set(id, info)
+    }
+
+}
+
 async function loadFranchise(ids) {
     response = await fetch(config.serveraddress, {
         method: 'POST',
@@ -1309,6 +1333,17 @@ async function populateViewGameModalWithGame(id, titleText) {
             releaseDate.innerHTML = new Date(gameInfo.first_release_date).toDateString()
             releaseDate.innerHTML += `<br>${dateToRelativeString(new Date(gameInfo.first_release_date))}`
         }
+    }
+
+    await preloadPrice(id);
+    let priceCardEl = document.getElementById("pricecard")
+    if (gameInfo.price) {
+        let priceEl = document.getElementById("price")
+        priceEl.innerHTML = `<strike>${gameInfo.price.initial_formatted}</strike> ${gameInfo.price.final_formatted}`
+        setElementVisibility(priceCardEl, true)
+    }
+    else {
+        setElementVisibility(priceCardEl, false)
     }
 
     let platformMetaInfo = await preloadPlatformMetaInfo()
