@@ -1337,7 +1337,7 @@ async function populateViewGameModalWithGame(id, titleText) {
 
     await preloadPrice(id);
     let priceCardEl = document.getElementById("pricecard")
-    if (gameInfo.price) {
+    if (gameInfo.price && gameInfo.price.final_formatted != undefined) {
         let priceEl = document.getElementById("price")
         priceEl.innerHTML = `<strike>${gameInfo.price.initial_formatted}</strike> ${gameInfo.price.final_formatted}`
         setElementVisibility(priceCardEl, true)
