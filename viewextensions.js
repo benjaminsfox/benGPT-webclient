@@ -1,3 +1,5 @@
+
+// Sort Methods
 async function sortAlphabetically(gameTiles) {
     gameTiles.sort((a, b) => {
         let atitle = a.querySelector(".gametitle").textContent
@@ -45,6 +47,8 @@ function sortByHltb(field) {
 registerSortMethod("hltbMain", "How Long To Beat (Main)", sortByHltb('main'))
 registerSortMethod("hltbMainExtra", "How Long To Beat (Main + Extra)", sortByHltb('main_extra'))
 registerSortMethod("hltbCompletionist", "How Long To Beat (Completionist)", sortByHltb('completionist'))
+
+// Group Methods
 
 async function groupByReleased(gameTiles) {
     await preloadReleaseInfo()
@@ -120,6 +124,8 @@ async function groupByAddedBy(gameTiles) {
 }
 
 registerGroupMethod("addedBy", "Added By User", groupByAddedBy)
+
+// Game Tile Visuals
 
 async function addAddedByUserToTile(tile) {
     let name = tile.getAttribute("addedBy")
@@ -264,3 +270,31 @@ async function addPlayDataToTile(tile) {
 }
 
 registerGameTileVisual("playdata", "Play Data", addPlayDataToTile, true, false)
+
+// View Modal Extensions
+
+async function addPlayDataToViewModal(carddiv, gameId, modalBody) {
+    let playdata = await preloadPlayData()
+    let data = playdata.get(gameId)
+
+    let p = document.createElement("p")
+    carddiv.appendChild(p)
+
+    carddiv.querySelector("h5").innerHTML = data ? `Played by <b>${data.length}</b> User${data.length !== 1 ? 's' : ''}` : "Played by <b>0</b> Users"
+
+    if (data && data.length > 0) {
+        let ul = document.createElement("ul")
+        carddiv.appendChild(ul)
+        ul.setAttribute("class", "list-group")
+
+        for (let user of data) {
+            let li = document.createElement("li")
+            li.setAttribute("class", "list-group-item")
+            li.textContent = user
+            ul.appendChild(li)
+        }
+    }
+    
+}
+
+registerViewModalExtension("playdata", "Played By", addPlayDataToViewModal, ViewModalExtensionType.Sidebar)

@@ -998,13 +998,57 @@ function registerGameTileVisual(name, displayName, methodAsyncFn, appliesToPlayl
     visual.register()
 }
 
+const ViewModalExtensionType = Object.freeze({
+    Main : 'main',
+    Sidebar : 'sidebar'
+});
+
+var viewModalExtensions = []
+
+class ViewModalExtension {
+    constructor(name, displayName, methodAsyncFn, type = ViewModalExtensionType.Sidebar) {
+        this.type = type;
+        this.name = name;
+        this.displayName = displayName;
+        this.methodAsyncFn = methodAsyncFn;
+    }
+
+    register() {
+        if (viewModalExtensions.find(e => e.name == this.name))
+            console.error(`ViewModalExtension already registered! ${this.name}`)
+
+        viewModalExtensions.push(this);
+    }
+
+    async apply(gameId, modalBody) {
+        let carddiv = document.createElement("div")
+        modalBody.querySelector(`#viewModalExtensionContainer-${this.type}`).appendChild(carddiv)
+
+        carddiv.setAttribute("id", `viewModalExtension-${this.name}`)
+        carddiv.setAttribute("class", "card shadow-sm rounded-4 p-4 mb-2")
+        carddiv.innerHTML = `<h5>${this.displayName}</h5>`
+        await this.methodAsyncFn(carddiv, gameId, modalBody)
+    }
+}
+
+function registerViewModalExtension(name, displayName, methodAsyncFn, type = ViewModalExtensionType.Sidebar) {
+    let extension = new ViewModalExtension(name, displayName, methodAsyncFn, type)
+    extension.register()
+}
+
+async function applyViewModalExtensions(gameId, modalBody) {
+    for (let extension of viewModalExtensions) {
+        await extension.apply(gameId, modalBody)
+    }
+}
+
 var linkButtonMap = new Map()
 function registerLinkButton(urlRegexPattern, buttonHtml) {
     linkButtonMap.set(urlRegexPattern, buttonHtml)
 }
 
 function getLinkButton(url) {
-    for (linkButton of linkButtonMap) {
+    for (let linkButton of linkButtonMap) {
         if (url.match(linkButton[0])) {
             return linkButton[1]
         }
@@ -1021,6 +1065,11 @@ function getLinkButton(url) {
 
 }
 
+const viewSettingsVersion = Object.freeze({
+    VersionIntroduced : 1,
+    PlayDataIntroduced : 2
+});
+
 function tryLoadViewSettings() {
     let stored = localStorage.getItem("viewSettings")
     if (stored != null) {
@@ -1033,6 +1082,18 @@ function tryLoadViewSettings() {
 
     if (viewSettings.tileDisplay === undefined) {
         viewSettings.tileDisplay = "crop";
+    }
+
+    if (viewSettings.version === undefined) {
+        viewSettings.version = viewSettingsVersion.VersionIntroduced;
+    }
+    
+    if (viewSettings.version < viewSettingsVersion.PlayDataIntroduced) {
+        if (!viewSettings.showfields.includes("playdata")) {
+            viewSettings.showfields.push("playdata");
+        }
+
+        viewSettings.version = viewSettingsVersion.PlayDataIntroduced;
     }
 
     applyTileDisplaySetting()
@@ -1129,6 +1190,8 @@ function resetViewGameModal() {
     modal.querySelector("#franchisecard").textContent = ""
     setElementVisibility(modal.querySelector("#franchisecard"), false)
     modal.querySelector("#viewOnIGDB").setAttribute("href", "")
+    modal.querySelector("#viewModalExtensionContainer-main").textContent = ""
+    modal.querySelector("#viewModalExtensionContainer-sidebar").textContent = ""
 }
 
 function viewAddRemoveButtonClicked(button) {
@@ -1366,6 +1429,9 @@ async function populateViewGameModalWithGame(id, titleText) {
             }
         }
     }
+
+    // Add view extensions
+    await applyViewModalExtensions(id, modal)
 
     hltb = (await hltb).get(id)
     if (hltb) {
