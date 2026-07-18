@@ -220,3 +220,47 @@ async function addTimeToBeatToTile(tile) {
 }
 
 registerGameTileVisual("hltb", "Beat Time", addTimeToBeatToTile)
+
+async function addPlayDataToTile(tile) {
+    let playdata = await preloadPlayData()
+    let id = Number(tile.getAttribute("gameid"))
+
+    let data = playdata.get(id)
+
+    let played = data ? data.includes(config.userName) : false;
+
+    // create the div to hold the play data button
+    let div = document.createElement("div")
+    div.setAttribute("class", "rounded")
+    div.setAttribute("title", "Click to toggle whether you've played this game or not")
+    div.setAttribute("id", "playdata")
+    div.setAttribute("style", "text-align: right")
+
+    let button = div.appendChild(document.createElement("button"))
+    button.setAttribute("class", `btn btn-sm ${played ? 'btn-success' : 'btn-secondary'}`)
+    button.innerHTML = played ? `Played: &#128505;` : `Played: &#9744;`
+
+    button.addEventListener("click", async (event) => {
+        let body = {
+            "op" : "setPlayData",
+            "id" : id,
+            "user" : config.userName,
+            "played" : !played
+        }
+
+        await postServer(body)
+        let response = await postServer(body)
+        if (response.ok) {
+            resetPlayData();
+
+            tile = event.target.closest(".gametile")
+            tile.querySelector("#playdata").outerHTML = ''
+            await addPlayDataToTile(tile)
+        }
+    })
+
+    let visuals = tile.querySelector(".gamecontrolcontent");
+    visuals.appendChild(div)
+}
+
+registerGameTileVisual("playdata", "Play Data", addPlayDataToTile, true, false)

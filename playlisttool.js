@@ -408,6 +408,40 @@ async function preloadVideos() {
     return videosMap;
 }
 
+var playDataMap = new Map();
+function resetPlayData() {
+    playDataMap = new Map();
+}
+
+async function preloadPlayData(ids = [...document.getElementsByClassName("gametile")].map(t=>Number(t.getAttribute('gameId')))) {
+    ids = ids.filter(e=>!playDataMap.has(Number(e)))
+    ids.sort()
+
+    let doFetch = async function(withIds) {
+        response = await postServer({
+            "op" : "getPlayData",
+            "ids" : withIds
+        });
+
+        if (response.ok) {
+            body = await response.json()
+            return body['PlayData']
+        }
+    }
+
+    let lastResponseLen = -1;
+    while (ids.length > 0 && lastResponseLen != 0) {
+        let batch = await doFetch(ids)
+        lastResponseLen = batch.length
+        for (let playDataId in batch) {
+            playDataMap.set(Number(playDataId), batch[playDataId])
+            ids = ids.filter(e=> e != Number(playDataId))
+        }
+    }
+
+    return playDataMap;
+}
+
 async function preloadPlatformInfo() {
     let ids = [...document.getElementsByClassName("gametile")].map(gameTile => Number(gameTile.getAttribute("gameId")))
 
@@ -481,6 +515,7 @@ async function refreshPlaylist() {
     gametilecontainer.innerHTML = ''
 
     registeredPlaylistIds = []
+    resetPlayData();
 
     let spinner = document.getElementById("playlist-loading-spinner")
     setElementVisibility(spinner, true)
