@@ -153,6 +153,16 @@ function addButtonClicked(addButton, id, title) {
     }
 }
 
+async function postServer(requestbody) {
+    return await fetch(config.serveraddress, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestbody)
+    });
+}
+
 var coverMap = new Map();
 async function preloadCovers(rawJson) {
     let ids = []
@@ -162,16 +172,10 @@ async function preloadCovers(rawJson) {
     }
     ids.sort()
 
-    response = await fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
+    response = await postServer({
             "op" : "getCovers",
             "ids" : ids
-        })
-    });
+        });
 
     if (response.ok) {
         body = await response.json()
@@ -206,13 +210,7 @@ async function preloadGameFields(ids, fields, postprocessfn = (e => e), gameType
             "fields" : fields
         }
         if (gameTypes) body["game_types"] = gameTypes
-        response = await fetch(config.serveraddress, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(body)
-        });
+        response = await postServer(body);
 
         if (response.ok) {
             body = await response.json()
@@ -261,17 +259,11 @@ async function getPopular(offset = 0, num = 30, pop_type = 1 + Math.floor(Math.r
     last_pop_type = pop_type;
 
 
-    response = await fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            "op" : "getPopular",
-            "num" : num,
-            "pop_type" : pop_type,
-            "offset" : offset
-        })
+    response = await postServer({
+        "op" : "getPopular",
+        "num" : num,
+        "pop_type" : pop_type,
+        "offset" : offset
     });
 
     if (response.ok) {
@@ -286,15 +278,9 @@ async function preloadWebsites(ids = [...document.getElementsByClassName("gameti
     ids = ids.filter(id => (gameFieldsMap.has(id) && !gameFieldsMap.get(id).websites))
     
     let doFetch = async function(withIds) {
-        response = await fetch(config.serveraddress, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "op" : "getWebsites",
-                "ids" : withIds
-            })
+        response = await postServer({
+            "op" : "getWebsites",
+            "ids" : withIds
         });
 
         if (response.ok) {
@@ -322,15 +308,9 @@ async function preloadWebsites(ids = [...document.getElementsByClassName("gameti
 }
 
 async function preloadPrice(id) {
-    response = await fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            "op" : "getPrice",
-            "id" : id
-        })
+    response = await postServer({
+        "op" : "getPrice",
+        "id" : id
     });
 
     if (response.ok) {
@@ -346,15 +326,9 @@ async function preloadPrice(id) {
 }
 
 async function loadFranchise(ids) {
-    response = await fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            "op" : "getFranchises",
-            "ids" : ids
-        })
+    response = await postServer({
+        "op" : "getFranchises",
+        "ids" : ids
     });
 
     if (response.ok) {
@@ -369,15 +343,9 @@ async function preloadHowLongToBeat(ids = [...document.getElementsByClassName("g
     ids.sort()
 
     let doFetch = async function(withIds) {
-        response = await fetch(config.serveraddress, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "op" : "getHltb",
-                "ids" : withIds
-            })
+        response = await postServer({
+            "op" : "getHltb",
+            "ids" : withIds
         });
 
         if (response.ok) {
@@ -415,15 +383,9 @@ async function preloadVideos() {
     ids.sort()
 
     let doFetch = async function(withIds) {
-        response = await fetch(config.serveraddress, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "op" : "getVideos",
-                "ids" : withIds
-            })
+        response = await postServer({
+            "op" : "getVideos",
+            "ids" : withIds
         });
 
         if (response.ok) {
@@ -464,15 +426,9 @@ async function preloadPlatformMetaInfo() {
     ids.sort()
 
     let doFetch = async function(withIds) {
-        response = await fetch(config.serveraddress, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "op" : "getPlatforms",
-                "ids" : withIds
-            })
+        response = await postServer({
+            "op" : "getPlatforms",
+            "ids" : withIds
         });
 
         if (response.ok) {
@@ -599,16 +555,10 @@ async function addAdditionalDataForAdd() {
 }
 
 function removeGame(id, title) {
-    fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            'Content-Type' : 'application/json'
-        },
-        body: JSON.stringify({
-            "playlist" : config.playlistName,
-            "op" : "sub",
-            "id" : id
-        })
+    postServer({
+        "playlist" : config.playlistName,
+        "op" : "sub",
+        "id" : id
     }).then(response => {
         if (response.ok) {
             //alert(`Removing Game ${id}, ${title}`)
@@ -618,17 +568,11 @@ function removeGame(id, title) {
 }
 
 function addGame(id, title) {
-    fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            'Content-Type' : 'application/json'
-        },
-        body: JSON.stringify({
-            "playlist" : config.playlistName,
-            "op" : "add",
-            "id" : id,
-            "user" : config.userName
-        })
+    postServer({
+        "playlist" : config.playlistName,
+        "op" : "add",
+        "id" : id,
+        "user" : config.userName
     }).then(response => {
         if (response.ok) {
             //alert(`Adding Game ${id}, ${title}`)
@@ -638,17 +582,11 @@ function addGame(id, title) {
 }
 
 function moveBefore(firstId, secondId) {
-    fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            'Content-Type' : 'application/json'
-        },
-        body: JSON.stringify({
-            "playlist" : config.playlistName,
-            "op" : "moveBefore",
-            "id1" : firstId,
-            "id2" : secondId
-        })
+    postServer({
+        "playlist" : config.playlistName,
+        "op" : "moveBefore",
+        "id1" : firstId,
+        "id2" : secondId
     }).then(response => {
         if (response.ok) {
             //alert(`Adding Game ${id}, ${title}`)
@@ -658,17 +596,12 @@ function moveBefore(firstId, secondId) {
 }
 
 async function GetNote(id) {
-    response = await fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            'Content-Type' : 'application/json'
-        },
-        body: JSON.stringify({
-            "playlist" : config.playlistName,
-            "op" : "getNote",
-            "id" : id
-        })
-    })
+    response = await postServer({
+        "playlist" : config.playlistName,
+        "op" : "getNote",
+        "id" : id
+    });
+
     if (response.ok) {
         json = await response.json()
         return json['Note']
@@ -676,18 +609,12 @@ async function GetNote(id) {
 }
 
 function SetNote(id, note) {
-    fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            'Content-Type' : 'application/json'
-        },
-        body: JSON.stringify({
-            "playlist" : config.playlistName,
-            "op" : "setNote",
-            "id" : id,
-            "note" : note
-        })
-    })
+    postServer({
+        "playlist" : config.playlistName,
+        "op" : "setNote",
+        "id" : id,
+        "note" : note
+    });
 }
 
 window.onload = function() {
@@ -792,16 +719,10 @@ async function doSearchQuery(query, offset = 0) {
     let spinner = document.getElementById("addgame-loading-spinner")
     spinner.setAttribute("class", "")
     
-    response = await fetch(config.serveraddress, {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            "op" : "search",
-            "query" : query,
-            "offset" : offset
-        })
+    response = await postServer({
+        "op" : "search",
+        "query" : query,
+        "offset" : offset
     });
 
     if (response.ok) {
