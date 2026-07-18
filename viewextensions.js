@@ -276,6 +276,7 @@ registerGameTileVisual("playdata", "Play Data", addPlayDataToTile, true, false)
 async function addPlayDataToViewModal(carddiv, gameId, modalBody) {
     let playdata = await preloadPlayData()
     let data = playdata.get(gameId)
+    data.sort();
 
     let p = document.createElement("p")
     carddiv.appendChild(p)
@@ -297,4 +298,4 @@ async function addPlayDataToViewModal(carddiv, gameId, modalBody) {
     
 }
 
-registerViewModalExtension("playdata", "Played By", addPlayDataToViewModal, ViewModalExtensionType.Sidebar)
+registerViewModalExtension("playdata", "Played By", addPlayDataToViewModal, ViewModalExtensionType.SidebarTop)

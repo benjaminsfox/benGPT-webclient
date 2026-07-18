@@ -1000,7 +1000,8 @@ function registerGameTileVisual(name, displayName, methodAsyncFn, appliesToPlayl
 
 const ViewModalExtensionType = Object.freeze({
     Main : 'main',
-    Sidebar : 'sidebar'
+    Sidebar : 'sidebar',
+    SidebarTop : 'sidebar-top',
 });
 
 var viewModalExtensions = []
@@ -1190,8 +1191,9 @@ function resetViewGameModal() {
     modal.querySelector("#franchisecard").textContent = ""
     setElementVisibility(modal.querySelector("#franchisecard"), false)
     modal.querySelector("#viewOnIGDB").setAttribute("href", "")
-    modal.querySelector("#viewModalExtensionContainer-main").textContent = ""
-    modal.querySelector("#viewModalExtensionContainer-sidebar").textContent = ""
+    for (let extensiontype in ViewModalExtensionType) {
+        modal.querySelector(`#viewModalExtensionContainer-${ViewModalExtensionType[extensiontype]}`).textContent = ""
+    }
 }
 
 function viewAddRemoveButtonClicked(button) {
