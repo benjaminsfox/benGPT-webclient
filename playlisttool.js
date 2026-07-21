@@ -1398,6 +1398,14 @@ async function populateViewGameModalWithGame(id, titleText) {
             let linkContent = getLinkButton(website.url)
             
             websites.innerHTML += `<a href="${website.url}" target="_blank">${linkContent}</a>`
+
+            if (website.url.match(/\/\/(.*?)(?:\/|$)/)[1] == "store.steampowered.com") {
+                let steamAppId = website.url.match(/app\/(\d+)/)[1]
+                let steamAppLink = document.getElementById("steamapplink")
+                let url = `steam://advertise/${steamAppId}`
+                linkContent = getLinkButton(url)
+                steamAppLink.innerHTML = `<a href="${url}" target="_blank">${linkContent}</a>`
+            }
         }
 
         children = [...websites.children].sort((a, b) => a.textContent.trim() > b.textContent.trim())
