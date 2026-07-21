@@ -1191,6 +1191,8 @@ function resetViewGameModal() {
     modal.querySelector("#franchisecard").textContent = ""
     setElementVisibility(modal.querySelector("#franchisecard"), false)
     modal.querySelector("#viewOnIGDB").setAttribute("href", "")
+    modal.querySelector("#steamapplink").setAttribute("href", "")
+    modal.querySelector("#steamapplink").innerHTML = ""
     for (let extensiontype in ViewModalExtensionType) {
         modal.querySelector(`#viewModalExtensionContainer-${ViewModalExtensionType[extensiontype]}`).textContent = ""
     }
