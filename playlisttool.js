@@ -1391,7 +1391,7 @@ async function populateViewGameModalWithGame(id, titleText) {
         }
     }
 
-    await preloadWebsites()
+    await preloadWebsites(ids = [id])
     gameInfo = gameFieldsMap.get(id)
     if (gameInfo.websites) {
         let websites = modal.querySelector('#websites')
