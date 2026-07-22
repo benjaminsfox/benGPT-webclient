@@ -828,7 +828,7 @@ async function initAddGame() {
 }
 
 function onAddGameScrollEnd(divEl) {
-    if (divEl.scrollTop >= divEl.scrollTopMax) {
+    if (Math.abs(divEl.scrollTop - divEl.scrollHeight + divEl.clientHeight) <= 1) {
         console.log("scrolled to bottom!")
 
         LoadNextAddGamePage();
