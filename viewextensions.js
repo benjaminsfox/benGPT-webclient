@@ -238,11 +238,11 @@ async function addPlayDataToTile(tile) {
     // create the div to hold the play data button
     let div = document.createElement("div")
     div.setAttribute("class", "rounded")
-    div.setAttribute("title", "Click to toggle whether you've played this game or not")
     div.setAttribute("id", "playdata")
     div.setAttribute("style", "text-align: right")
-
+    
     let button = div.appendChild(document.createElement("button"))
+    button.setAttribute("title", "Click to toggle whether you've played this game or not")
     button.setAttribute("class", `btn btn-sm ${played ? 'btn-success' : 'btn-secondary'}`)
     button.innerHTML = played ? `Played: &#128505;` : `Played: &#9744;`
 
