@@ -889,7 +889,7 @@ export function registerSortMethod(name, displayName, methodAsyncFn) {
 
 let groupMethods = []
 
-class GroupMethod {
+export class GroupMethod {
     constructor(name, displayName, methodAsyncFn) {
         this.name = name
         this.displayName = displayName
