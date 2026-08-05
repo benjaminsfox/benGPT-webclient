@@ -1,3 +1,5 @@
+import { registerLinkButton } from "./playlisttool.js";
+
 registerLinkButton(`store\.steampowered\.com`, `
         <button class="btn btn-md btn-store-steam">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-steam" viewBox="0 0 16 16">

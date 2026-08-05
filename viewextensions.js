@@ -1,3 +1,4 @@
+import * as pl from './playlisttool.js'
 
 // Sort Methods
 async function sortAlphabetically(gameTiles) {
@@ -10,13 +11,13 @@ async function sortAlphabetically(gameTiles) {
     })
 }
 
-registerSortMethod("alpha", "Alphabetical", sortAlphabetically)
+pl.registerSortMethod("alpha", "Alphabetical", sortAlphabetically)
 
 async function sortByReleased(gameTiles) {
-    await preloadReleaseInfo()
+    await pl.preloadReleaseInfo()
     gameTiles.sort((a, b) => {
-        let arelease = gameFieldsMap.get(Number(a.getAttribute("gameid"))).first_release_date
-        let brelease = gameFieldsMap.get(Number(b.getAttribute("gameid"))).first_release_date
+        let arelease = pl.gameFieldsMap.get(Number(a.getAttribute("gameid"))).first_release_date
+        let brelease = pl.gameFieldsMap.get(Number(b.getAttribute("gameid"))).first_release_date
         if (brelease == 'TBA') return 1;
         if (arelease == 'TBA') return -1;
         if (arelease < brelease) return 1;
@@ -25,11 +26,11 @@ async function sortByReleased(gameTiles) {
     })
 }
 
-registerSortMethod("released", "Released", sortByReleased)
+pl.registerSortMethod("released", "Released", sortByReleased)
 
 function sortByHltb(field) {
     return async function(gameTiles) {
-        let hltbinfo = await preloadHowLongToBeat()
+        let hltbinfo = await pl.preloadHowLongToBeat()
         gameTiles.sort((a, b) => {
             let aTime = hltbinfo.get(Number(a.getAttribute("gameid")))
             let bTime = hltbinfo.get(Number(b.getAttribute("gameid")))
@@ -44,20 +45,20 @@ function sortByHltb(field) {
     }
 }
 
-registerSortMethod("hltbMain", "How Long To Beat (Main)", sortByHltb('main'))
-registerSortMethod("hltbMainExtra", "How Long To Beat (Main + Extra)", sortByHltb('main_extra'))
-registerSortMethod("hltbCompletionist", "How Long To Beat (Completionist)", sortByHltb('completionist'))
+pl.registerSortMethod("hltbMain", "How Long To Beat (Main)", sortByHltb('main'))
+pl.registerSortMethod("hltbMainExtra", "How Long To Beat (Main + Extra)", sortByHltb('main_extra'))
+pl.registerSortMethod("hltbCompletionist", "How Long To Beat (Completionist)", sortByHltb('completionist'))
 
 // Group Methods
 
 async function groupByReleased(gameTiles) {
-    await preloadReleaseInfo()
+    await pl.preloadReleaseInfo()
     
-    let releasedCategory = GroupMethod.Category("Released")
-    let comingSoonCategory = GroupMethod.Category("Coming Soon")
+    let releasedCategory = pl.GroupMethod.Category("Released")
+    let comingSoonCategory = pl.GroupMethod.Category("Coming Soon")
 
-    for (gameTile of gameTiles) {
-        let releasedate = gameFieldsMap.get(Number(gameTile.getAttribute("gameId"))).first_release_date
+    for (let gameTile of gameTiles) {
+        let releasedate = pl.gameFieldsMap.get(Number(gameTile.getAttribute("gameId"))).first_release_date
         if (releasedate) {
             if (releasedate == 'TBA') {
                 comingSoonCategory.push(gameTile)
@@ -75,20 +76,20 @@ async function groupByReleased(gameTiles) {
     return [releasedCategory, comingSoonCategory]
 }
 
-registerGroupMethod("released", "Released", groupByReleased)
+pl.registerGroupMethod("released", "Released", groupByReleased)
 
 async function groupByPlatform(gameTiles) {
-    await preloadPlatformInfo()
-    let platformMetaInfo = await preloadPlatformMetaInfo()
+    await pl.preloadPlatformInfo()
+    let platformMetaInfo = await pl.preloadPlatformMetaInfo()
     
     let categories = []
 
-    for (gameTile of gameTiles) {
-        let platforms = gameFieldsMap.get(Number(gameTile.getAttribute("gameId"))).platforms
-        for (plat of platforms) {
+    for (let gameTile of gameTiles) {
+        let platforms = pl.gameFieldsMap.get(Number(gameTile.getAttribute("gameId"))).platforms
+        for (let plat of platforms) {
             let category = categories.find(e => e.displayName == platformMetaInfo.get(plat).name)
             if (!category) {
-                category = GroupMethod.Category(platformMetaInfo.get(plat).name)
+                category = pl.GroupMethod.Category(platformMetaInfo.get(plat).name)
                 categories.push(category)
             }
 
@@ -102,16 +103,16 @@ async function groupByPlatform(gameTiles) {
     return categories
 }
 
-registerGroupMethod("platform", "Platform", groupByPlatform)
+pl.registerGroupMethod("platform", "Platform", groupByPlatform)
 
 async function groupByAddedBy(gameTiles) {
     let categories = []
 
-    for (gameTile of gameTiles) {
+    for (let gameTile of gameTiles) {
         let addedBy = gameTile.getAttribute("addedBy")
         let category = categories.find(e => e.displayName == addedBy)
         if (!category) {
-            category = GroupMethod.Category(addedBy)
+            category = pl.GroupMethod.Category(addedBy)
             categories.push(category)
         }
 
@@ -123,7 +124,7 @@ async function groupByAddedBy(gameTiles) {
     return categories
 }
 
-registerGroupMethod("addedBy", "Added By User", groupByAddedBy)
+pl.registerGroupMethod("addedBy", "Added By User", groupByAddedBy)
 
 // Game Tile Visuals
 
@@ -139,10 +140,10 @@ async function addAddedByUserToTile(tile) {
     visuals.appendChild(user)
 }
 
-registerGameTileVisual("addedBy", "Added By User", addAddedByUserToTile)
+pl.registerGameTileVisual("addedBy", "Added By User", addAddedByUserToTile)
 
 async function addReleaseDateToTile(tile) {
-    await preloadReleaseInfo()
+    await pl.preloadReleaseInfo()
     
     let id = Number(tile.getAttribute("gameid"))
     let visuals = tile.querySelector("#gameTileVisuals");
@@ -150,39 +151,39 @@ async function addReleaseDateToTile(tile) {
     let date = document.createElement("div")
     date.setAttribute("class", `gamedate text-center text-truncate px-2`)
     
-    let releasedate = gameFieldsMap.get(id).first_release_date
+    let releasedate = pl.gameFieldsMap.get(id).first_release_date
     if (releasedate) {
         if (releasedate == 'TBA') {
             date.textContent = releasedate
         } else {
             let rdate = new Date(releasedate)
-            date.innerHTML = `${rdate.toLocaleDateString()}<br>${dateToRelativeString(rdate)}`
+            date.innerHTML = `${rdate.toLocaleDateString()}<br>${pl.dateToRelativeString(rdate)}`
         }
     }
 
     visuals.appendChild(date)
 }
 
-registerGameTileVisual("releasedate", "Release Date", addReleaseDateToTile)
+pl.registerGameTileVisual("releasedate", "Release Date", addReleaseDateToTile)
 
 async function addPlatformIconsToTile(tile) {
-    await preloadPlatformInfo()
-    let platformmetainfo = await preloadPlatformMetaInfo()
+    await pl.preloadPlatformInfo()
+    let platformmetainfo = await pl.preloadPlatformMetaInfo()
     let id = Number(tile.getAttribute("gameid"))
 
     let div = document.createElement("div")
     div.setAttribute("class", "d-flex justify-content-center")
     
-    game = gameFieldsMap.get(id)
+    let game = pl.gameFieldsMap.get(id)
 
     if (!game.platforms)
         return
 
-    for (platformid of game.platforms) {
+    for (let platformid of game.platforms) {
         let thisdiv = div.appendChild(document.createElement("div"))
         thisdiv.setAttribute("class", "mx-1")
         thisdiv.setAttribute("title", platformmetainfo.get(platformid).name)
-        thisdiv.innerHTML += await getPlatformIcon(platformmetainfo.get(platformid).slug)
+        thisdiv.innerHTML += await pl.getPlatformIcon(platformmetainfo.get(platformid).slug)
     }
 
     let children = [...div.children]
@@ -193,10 +194,10 @@ async function addPlatformIconsToTile(tile) {
     visuals.appendChild(div)
 }
 
-registerGameTileVisual("platform", "Platforms", addPlatformIconsToTile, true, true)
+pl.registerGameTileVisual("platform", "Platforms", addPlatformIconsToTile, true, true)
 
 async function addTimeToBeatToTile(tile) {
-    let hltbinfo = await preloadHowLongToBeat()
+    let hltbinfo = await pl.preloadHowLongToBeat()
     let id = Number(tile.getAttribute("gameid"))
 
     let formatter = new Intl.DurationFormat("en", {style: "narrow"})
@@ -225,15 +226,15 @@ async function addTimeToBeatToTile(tile) {
     }
 }
 
-registerGameTileVisual("hltb", "Beat Time", addTimeToBeatToTile)
+pl.registerGameTileVisual("hltb", "Beat Time", addTimeToBeatToTile)
 
 async function addPlayDataToTile(tile) {
-    let playdata = await preloadPlayData()
+    let playdata = await pl.preloadPlayData()
     let id = Number(tile.getAttribute("gameid"))
 
     let data = playdata.get(id)
 
-    let played = data ? data.includes(config.userName) : false;
+    let played = data ? data.includes(pl.config.userName) : false;
 
     // create the div to hold the play data button
     let div = document.createElement("div")
@@ -250,14 +251,14 @@ async function addPlayDataToTile(tile) {
         let body = {
             "op" : "setPlayData",
             "id" : id,
-            "user" : config.userName,
+            "user" : pl.config.userName,
             "played" : !played
         }
 
-        await postServer(body)
-        let response = await postServer(body)
+        await pl.postServer(body)
+        let response = await pl.postServer(body)
         if (response.ok) {
-            resetPlayData();
+            pl.resetPlayData();
 
             tile = event.target.closest(".gametile")
             tile.querySelector("#playdata").outerHTML = ''
@@ -269,12 +270,13 @@ async function addPlayDataToTile(tile) {
     visuals.appendChild(div)
 }
 
-registerGameTileVisual("playdata", "Play Data", addPlayDataToTile, true, false)
+pl.registerGameTileVisual("playdata", "Play Data", addPlayDataToTile, true, false)
 
 // View Modal Extensions
 
+// eslint-disable-next-line no-unused-vars
 async function addPlayDataToViewModal(carddiv, gameId, modalBody) {
-    let playdata = await preloadPlayData()
+    let playdata = await pl.preloadPlayData()
     let data = playdata.get(gameId)
     data.sort();
 
@@ -298,4 +300,4 @@ async function addPlayDataToViewModal(carddiv, gameId, modalBody) {
     
 }
 
-registerViewModalExtension("playdata", "Played By", addPlayDataToViewModal, ViewModalExtensionType.SidebarTop)
+pl.registerViewModalExtension("playdata", "Played By", addPlayDataToViewModal, pl.ViewModalExtensionType.SidebarTop)

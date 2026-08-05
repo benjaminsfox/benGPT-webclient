@@ -1,6 +1,9 @@
-var config = { playlistName: "playlist" };
+/*global bootstrap */
+/*global domtoimage */
 
-var registeredPlaylistIds = []
+export let config = { playlistName: "playlist" }
+
+let registeredPlaylistIds = []
 
 function setElementVisibility(htmlElement, newVis) {
     let oldclass = htmlElement.getAttribute("class")
@@ -11,11 +14,11 @@ function setElementVisibility(htmlElement, newVis) {
     }
 }
 
-function dateToRelativeString(date) {
+export function dateToRelativeString(date) {
     if (!date.getDate()) return ""
-    let days = Math.round((date - Date.now()) / 86400000);
+    let days = Math.round((date - Date.now()) / 86400000)
     
-    let formatter = new Intl.RelativeTimeFormat("en", {numeric: "auto"});
+    let formatter = new Intl.RelativeTimeFormat("en", {numeric: "auto"})
 
     if (Math.abs(days) > 365) {
         let years = Math.round(days / 365)
@@ -36,13 +39,13 @@ function dragstartHandler(ev, id) {
 }
 
 function dragoverHandler(ev) {
-    ev.preventDefault();
+    ev.preventDefault()
 }
 
 function dropHandler(ev, id) {
-    ev.preventDefault();
+    ev.preventDefault()
     const data = ev.dataTransfer.getData("text")
-    console.log(`${data} dropped on ${id}`);
+    console.log(`${data} dropped on ${id}`)
     moveBefore(Number(data), Number(id))
     
 }
@@ -63,9 +66,9 @@ class GameInfo {
 
         if (!forAdd) {
             gameTile.setAttribute("draggable", true)
-            gameTile.setAttribute("ondragstart", `dragstartHandler(event, ${this.id})`)
-            gameTile.setAttribute("ondrop", `dropHandler(event, ${this.id})`)
-            gameTile.setAttribute("ondragover", `dragoverHandler(event)`)
+            gameTile.addEventListener("dragstart", ev => dragstartHandler(ev, this.id))
+            gameTile.addEventListener("drop", ev => dropHandler(ev, this.id))
+            gameTile.addEventListener("dragover", ev => dragoverHandler(ev))
         }
 
         let card = gameTile.appendChild(document.createElement("div"))
@@ -94,7 +97,7 @@ class GameInfo {
             this.populateControlsForPlaylist(controls)
         let viewButton = controls.querySelector("#controlgroup").appendChild(document.createElement("button"))
         viewButton.setAttribute("class", "btn btn-sm btn-outline-secondary")
-        viewButton.setAttribute("onclick", "populateViewGameModal(this)")
+        viewButton.addEventListener("click", populateViewGameModal)
         viewButton.setAttribute("type", "button")
         viewButton.textContent = "View"
         return gameTile
@@ -108,12 +111,12 @@ class GameInfo {
         buttongroup.setAttribute("id", "controlgroup")
         let removeButton = buttongroup.appendChild(document.createElement("button"))
         removeButton.setAttribute("class", "btn btn-sm btn-outline-secondary")
-        removeButton.setAttribute("onclick", `removeGame(${this.id}, "${this.title}")`)
+        removeButton.addEventListener("click", () => removeGame(this.id, this.title))
         removeButton.setAttribute("type", "button")
         removeButton.textContent = "Remove"
         let timeStamp = bottom.appendChild(document.createElement("small"))
         timeStamp.setAttribute("class", "text-body-secondary")
-        timeStamp.textContent = "Added " + dateToRelativeString(this.timeStamp);
+        timeStamp.textContent = "Added " + dateToRelativeString(this.timeStamp)
     }
     
     populateControlsForAdd(controls) {
@@ -124,7 +127,7 @@ class GameInfo {
         buttongroup.setAttribute("id", "controlgroup")
         let addButton = buttongroup.appendChild(document.createElement("button"))
         addButton.setAttribute("type", "button")
-        addButton.setAttribute("onclick", `addButtonClicked(this, ${this.id}, "${this.title}")`)
+        addButton.addEventListener("click", () => addButtonClicked(addButton, this.id, this.title))
         if (registeredPlaylistIds.indexOf(this.id) == -1) {
             addButton.setAttribute("class", "btn btn-sm btn-outline-secondary")
             addButton.textContent = "Add"
@@ -136,10 +139,11 @@ class GameInfo {
 }
 
 function setTileSize(tileSizeInput) {
-    viewSettings.tileSize = tileSizeInput.value;
-    document.documentElement.style.setProperty("--gametile-size", `${tileSizeInput.value}px`);
+    viewSettings.tileSize = tileSizeInput.value
+    document.documentElement.style.setProperty("--gametile-size", `${tileSizeInput.value}px`)
     tileSizeInput.parentElement.querySelector('label').textContent = `Tile Size: ${tileSizeInput.value}`
 }
+document.getElementById("tileSizeInput").addEventListener("input", ev => setTileSize(ev.srcElement))
 
 function addButtonClicked(addButton, id, title) {
     if (registeredPlaylistIds.indexOf(id) == -1) {
@@ -153,33 +157,33 @@ function addButtonClicked(addButton, id, title) {
     }
 }
 
-async function postServer(requestbody) {
+export async function postServer(requestbody) {
     return await fetch(config.serveraddress, {
         method: 'POST',
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(requestbody)
-    });
+    })
 }
 
-var coverMap = new Map();
+let coverMap = new Map()
 async function preloadCovers(rawJson) {
     let ids = []
-    for (game of rawJson['Games']) {
+    for (let game of rawJson['Games']) {
         if (!coverMap.has(game['id']))
             ids.push(game['id'])
     }
     ids.sort()
 
-    response = await postServer({
+    let response = await postServer({
             "op" : "getCovers",
             "ids" : ids
-        });
+        })
 
     if (response.ok) {
-        body = await response.json()
-        for (pair of body['Covers']) {
+        let body = await response.json()
+        for (let pair of body['Covers']) {
             coverMap.set(pair[0], "https:" + pair[1].replace("t_thumb", `t_cover_big${viewSettings.tileSize <= 250 ? "" : "_2x"}`))
             updateImageForGameId(pair[0])
         }
@@ -189,12 +193,12 @@ async function preloadCovers(rawJson) {
     }
 }
 
-var gameFieldsMap = new Map()
-async function preloadGameFields(ids, fields, postprocessfn = (e => e), gameTypes = null) {
+export let gameFieldsMap = new Map()
+export async function preloadGameFields(ids, fields, postprocessfn = (e => e), gameTypes = null) {
     ids = ids.filter(id => {
         let info = gameFieldsMap.get(id)
         if (info) {
-            for (field of fields) {
+            for (let field of fields) {
                 if (!(field in info)) return true
             }
             return false
@@ -210,26 +214,26 @@ async function preloadGameFields(ids, fields, postprocessfn = (e => e), gameType
             "fields" : fields
         }
         if (gameTypes) body["game_types"] = gameTypes
-        response = await postServer(body);
+        let response = await postServer(body)
 
         if (response.ok) {
-            body = await response.json()
+            let body = await response.json()
             return body['Games']
         }
     }
 
-    let lastResponseLen = -1;
+    let lastResponseLen = -1
     while (ids.length > 0 && lastResponseLen != 0) {
         let batch = await doFetch(ids)
         lastResponseLen = batch.length
-        for (game of batch) {
+        for (let game of batch) {
             game = postprocessfn(game)
             if ('id' in game) {
                 let info = gameFieldsMap.get(game['id'])
                 if (!info) {
                     info = {}
                 }
-                for (field of fields) {
+                for (let field of fields) {
                     info[field] = game[field]
                 }
                 gameFieldsMap.set(game['id'], info)
@@ -239,7 +243,7 @@ async function preloadGameFields(ids, fields, postprocessfn = (e => e), gameType
     }
 }
 
-async function preloadReleaseInfo() {
+export async function preloadReleaseInfo() {
     let ids = [...document.getElementsByClassName("gametile")].map(gameTile => Number(gameTile.getAttribute("gameId")))
 
     await preloadGameFields(ids, ['first_release_date'], game => {
@@ -251,49 +255,49 @@ async function preloadReleaseInfo() {
     })
 }
 
-last_pop_type = 1;
+let last_pop_type = 1
 async function getPopular(offset = 0, num = 30, pop_type = 1 + Math.floor(Math.random() * 8)) {
     if (offset > 0) {
-        pop_type = last_pop_type;
+        pop_type = last_pop_type
     }
-    last_pop_type = pop_type;
+    last_pop_type = pop_type
 
 
-    response = await postServer({
+    let response = await postServer({
         "op" : "getPopular",
         "num" : num,
         "pop_type" : pop_type,
         "offset" : offset
-    });
+    })
 
     if (response.ok) {
-        body = await response.json()
+        let body = await response.json()
         return body['Games']
     }
 
-    return [];
+    return []
 }
 
-async function preloadWebsites(ids = [...document.getElementsByClassName("gametile")].map(gameTile => Number(gameTile.getAttribute("gameId")))) {
+export async function preloadWebsites(ids = [...document.getElementsByClassName("gametile")].map(gameTile => Number(gameTile.getAttribute("gameId")))) {
     ids = ids.filter(id => (gameFieldsMap.has(id) && !gameFieldsMap.get(id).websites))
     
     let doFetch = async function(withIds) {
-        response = await postServer({
+        let response = await postServer({
             "op" : "getWebsites",
             "ids" : withIds
-        });
+        })
 
         if (response.ok) {
-            body = await response.json()
+            let body = await response.json()
             return body['Games']
         }
     }
 
-    let lastResponseLen = -1;
+    let lastResponseLen = -1
     while (ids.length > 0 && lastResponseLen != 0) {
         let batch = await doFetch(ids)
         lastResponseLen = batch.length
-        for (game of batch) {
+        for (let game of batch) {
             if ('id' in game && 'websites' in game) {
                 let info = gameFieldsMap.get(game['id'])
                 if (!info) {
@@ -307,14 +311,14 @@ async function preloadWebsites(ids = [...document.getElementsByClassName("gameti
     }
 }
 
-async function preloadPrice(id) {
-    response = await postServer({
+export async function preloadPrice(id) {
+    let response = await postServer({
         "op" : "getPrice",
         "id" : id
-    });
+    })
 
     if (response.ok) {
-        body = await response.json()
+        let body = await response.json()
         let info = gameFieldsMap.get(id)
         if (!info) {
             info = {}
@@ -326,110 +330,106 @@ async function preloadPrice(id) {
 }
 
 async function loadFranchise(ids) {
-    response = await postServer({
+    let response = await postServer({
         "op" : "getFranchises",
         "ids" : ids
-    });
+    })
 
     if (response.ok) {
-        body = await response.json()
+        let body = await response.json()
         return body['Franchises']
     }
 }
 
-var howLongToBeatMap = new Map()
-async function preloadHowLongToBeat(ids = [...document.getElementsByClassName("gametile")].map(t=>Number(t.getAttribute('gameId')))) {
+let howLongToBeatMap = new Map()
+export async function preloadHowLongToBeat(ids = [...document.getElementsByClassName("gametile")].map(t=>Number(t.getAttribute('gameId')))) {
     ids = ids.filter(e=>!howLongToBeatMap.has(e))
     ids.sort()
 
     let doFetch = async function(withIds) {
-        response = await postServer({
+        let response = await postServer({
             "op" : "getHltb",
             "ids" : withIds
-        });
+        })
 
         if (response.ok) {
-            body = await response.json()
+            let body = await response.json()
             return body['Games']
         }
     }
 
-    let lastResponseLen = -1;
+    let lastResponseLen = -1
     while (ids.length > 0 && lastResponseLen != 0) {
         let batch = await doFetch(ids)
         lastResponseLen = batch.length
-        for (game of batch) {
+        for (let game of batch) {
             howLongToBeatMap.set(game['id'], game['hltb'])
             ids = ids.filter(val => val != game['id'])
         }
     }
 
-    return howLongToBeatMap;
+    return howLongToBeatMap
 }
 
-async function preloadVideosInfo(ids) {
-    await preloadGameFields(ids, ["videos"])
-}
-
-var videosMap = new Map()
-async function preloadVideos() {
+let videosMap = new Map()
+export async function preloadVideos() {
     let ids = []
-    for (gameInfo of gameFieldsMap) {
+    for (let gameInfo of gameFieldsMap) {
         if (gameInfo[1].videos)
-            for (id of gameInfo[1].videos)
+            for (let id of gameInfo[1].videos)
                 if (!videosMap.has(id))
                     ids.push(id)
     }
     ids.sort()
 
     let doFetch = async function(withIds) {
-        response = await postServer({
+        let response = await postServer({
             "op" : "getVideos",
             "ids" : withIds
-        });
+        })
 
         if (response.ok) {
-            body = await response.json()
+            let body = await response.json()
             return body['Videos']
         }
     }
 
-    let lastResponseLen = -1;
+    let lastResponseLen = -1
     while (ids.length > 0 && lastResponseLen != 0) {
         let batch = await doFetch(ids)
         lastResponseLen = batch.length
-        for (video of batch) {
+        for (let video of batch) {
             if ('id' in video && 'video_id' in video)
                 videosMap.set(video['id'], video['video_id'])
             ids = ids.filter(val => val != video['id'])
         }
     }
 
-    return videosMap;
+    return videosMap
 }
 
-var playDataMap = new Map();
-function resetPlayData() {
-    playDataMap = new Map();
+let playDataMap = new Map()
+export function resetPlayData() {
+    playDataMap = new Map()
 }
 
-async function preloadPlayData(ids = [...document.getElementsByClassName("gametile")].map(t=>Number(t.getAttribute('gameId')))) {
+export async function preloadPlayData(ids = [...document.getElementsByClassName("gametile")].map(t=>Number(t.getAttribute('gameId')))) {
     ids = ids.filter(e=>!playDataMap.has(Number(e)))
     ids.sort()
 
     let doFetch = async function(withIds) {
-        response = await postServer({
+        let response = await postServer({
             "op" : "getPlayData",
             "ids" : withIds
-        });
+        })
 
         if (response.ok) {
-            body = await response.json()
+            let body = await response.json()
             return body['PlayData']
         }
     }
 
-    let lastResponseLen = -1;
+    let lastResponseLen = -1
     while (ids.length > 0 && lastResponseLen != 0) {
         let batch = await doFetch(ids)
         lastResponseLen = batch.length
@@ -439,61 +439,61 @@ async function preloadPlayData(ids = [...document.getElementsByClassName("gameti
         }
     }
 
-    return playDataMap;
+    return playDataMap
 }
 
-async function preloadPlatformInfo() {
+export async function preloadPlatformInfo() {
     let ids = [...document.getElementsByClassName("gametile")].map(gameTile => Number(gameTile.getAttribute("gameId")))
 
     await preloadGameFields(ids, ['platforms'])
 }
 
-var platformMetaMap = new Map()
-async function preloadPlatformMetaInfo() {
+let platformMetaMap = new Map()
+export async function preloadPlatformMetaInfo() {
     let ids = []
-    for (gameInfo of gameFieldsMap) {
+    for (let gameInfo of gameFieldsMap) {
         if(gameInfo[1].platforms)
-            for (id of gameInfo[1].platforms)
+            for (let id of gameInfo[1].platforms)
                 if (!platformMetaMap.has(id))
                     ids.push(id)
     }
     ids.sort()
 
     let doFetch = async function(withIds) {
-        response = await postServer({
+        let response = await postServer({
             "op" : "getPlatforms",
             "ids" : withIds
-        });
+        })
 
         if (response.ok) {
-            body = await response.json()
+            let body = await response.json()
             return body['Platforms']
         }
     }
 
-    let lastResponseLen = -1;
+    let lastResponseLen = -1
     while (ids.length > 0 && lastResponseLen != 0) {
         let batch = await doFetch(ids)
         lastResponseLen = batch.length
-        for (game of batch) {
+        for (let game of batch) {
             if ('id' in game && 'name' in game && 'slug' in game)
                 platformMetaMap.set(game['id'], { name : game['name'], slug : game['slug']})
             ids = ids.filter(val => val != game['id'])
         }
     }
 
-    return platformMetaMap;
+    return platformMetaMap
 }
 
 
-var platformIcons = new Map();
-async function getPlatformIcon(slug) {
+let platformIcons = new Map()
+export async function getPlatformIcon(slug) {
     if (platformIcons.has(slug))
         return platformIcons.get(slug)
 
-    res = await fetch(`resource/platform_icon/${slug}.svg`)
-    if (res.ok) {
-        platformIcons.set(slug, res.text())
+    let response = await fetch(`resource/platform_icon/${slug}.svg`)
+    if (response.ok) {
+        platformIcons.set(slug, response.text())
     } else {
         platformIcons.set(slug, (await getPlatformIcon("missing")).replace("</svg>", `<text x="0" y="8" style="font-size:7px">${slug}</text></svg>`))
     }
@@ -505,7 +505,7 @@ async function getPlatformIcon(slug) {
 async function updateImageForGameId(id) {
     let tiles = [...document.getElementsByClassName("gametile")].filter(t => Number(t.getAttribute("gameId")) == id)
     let cover = coverMap.get(id)
-    for (tile of tiles) {
+    for (let tile of tiles) {
         tile.querySelector(".gameimage").setAttribute("src", cover)
     }
 }
@@ -515,18 +515,18 @@ async function refreshPlaylist() {
     gametilecontainer.innerHTML = ''
 
     registeredPlaylistIds = []
-    resetPlayData();
+    resetPlayData()
 
     let spinner = document.getElementById("playlist-loading-spinner")
     setElementVisibility(spinner, true)
     setElementVisibility(gametilecontainer, false)
     
-    response = null;
+    let response = null
 
     try {
         response = await fetch(`${config.serveraddress}/${config.playlistName}`, {
             method: 'GET'
-        });
+        })
     } catch (e) {
         if (e instanceof TypeError) {
             alert("The server could not be reached. Perhaps your browser is blocking it due to my bad SSL certificate? Pressing ok will attempt to connect to the server directly. If your browser warns you, press the 'Take me there anyway' button, then come back here.")
@@ -535,12 +535,12 @@ async function refreshPlaylist() {
     }
     
     if (response.ok) {
-        json = await response.json()
+        let json = await response.json()
         
         preloadCovers(json)
         
         let tileContainer = document.getElementById("gametilecontainer")
-        for (game of json['Games']) {
+        for (let game of json['Games']) {
             registeredPlaylistIds.push(game['id'])
             let g = new GameInfo(game['id'], game['name'], game['addedTimestamp'], game['addedBy'])
             tileContainer.appendChild(g.createTile())
@@ -554,20 +554,21 @@ async function refreshPlaylist() {
     
     addAdditionalDataForPlaylist()    
 }
+document.getElementById("refreshPlaylist").addEventListener("click", refreshPlaylist)
 
 async function addAdditionalDataForPlaylist() {
     let gametilecontainer = document.getElementById("gametilecontainer")
     let gameTiles = gametilecontainer.getElementsByClassName('gametile')
 
-    for (var tile of gameTiles) {
-        let visuals = tile.querySelector("#gameTileVisuals");
+    for (let tile of gameTiles) {
+        let visuals = tile.querySelector("#gameTileVisuals")
         if (visuals) {
             visuals.outerHTML = ""
         }
         let visDiv = document.createElement("div")
         visDiv.setAttribute("id", "gameTileVisuals")
         tile.querySelector(".gametitle").after(visDiv)
-        for (var visual of gameTileVisuals)
+        for (let visual of gameTileVisuals)
             await visual.applyPlaylist(tile)
     }
 }
@@ -576,33 +577,32 @@ async function addAdditionalDataForAdd() {
     let gametilecontainer = document.getElementById("addgametilecontainer")
     let gameTiles = gametilecontainer.getElementsByClassName('gametile')
 
-    for (var tile of gameTiles) {
-        let visuals = tile.querySelector("#gameTileVisuals");
+    for (let tile of gameTiles) {
+        let visuals = tile.querySelector("#gameTileVisuals")
         if (visuals) {
             visuals.outerHTML = ""
         }
         let visDiv = document.createElement("div")
         visDiv.setAttribute("id", "gameTileVisuals")
         tile.querySelector(".gametitle").after(visDiv)
-        for (var visual of gameTileVisuals)
+        for (let visual of gameTileVisuals)
             await visual.applyAdd(tile)
     }
 }
 
-function removeGame(id, title) {
+function removeGame(id) {
     postServer({
         "playlist" : config.playlistName,
         "op" : "sub",
         "id" : id
     }).then(response => {
         if (response.ok) {
-            //alert(`Removing Game ${id}, ${title}`)
             refreshPlaylist()
         }
     })
 }
 
-function addGame(id, title) {
+function addGame(id) {
     postServer({
         "playlist" : config.playlistName,
         "op" : "add",
@@ -610,7 +610,6 @@ function addGame(id, title) {
         "user" : config.userName
     }).then(response => {
         if (response.ok) {
-            //alert(`Adding Game ${id}, ${title}`)
             refreshPlaylist()
         }
     })
@@ -631,14 +630,14 @@ function moveBefore(firstId, secondId) {
 }
 
 async function GetNote(id) {
-    response = await postServer({
+    let response = await postServer({
         "playlist" : config.playlistName,
         "op" : "getNote",
         "id" : id
-    });
+    })
 
     if (response.ok) {
-        json = await response.json()
+        let json = await response.json()
         return json['Note']
     }
 }
@@ -649,47 +648,47 @@ function SetNote(id, note) {
         "op" : "setNote",
         "id" : id,
         "note" : note
-    });
+    })
 }
 
 window.onload = function() {
     let myModalEl = document.getElementById('addGameModal')
-    myModalEl.addEventListener('hidden.bs.modal', event => {
+    myModalEl.addEventListener('hidden.bs.modal', () => {
         resetAddGame()
     })
-    myModalEl.addEventListener('shown.bs.modal', event => {
+    myModalEl.addEventListener('shown.bs.modal', () => {
         initAddGame()
     })
     
     myModalEl = document.getElementById('settingsModal')
-    myModalEl.addEventListener('hidden.bs.modal', event => {
+    myModalEl.addEventListener('hidden.bs.modal', () => {
         cancelViewSettings()
     })
     
     myModalEl = document.getElementById('clientSettingsModal')
-    myModalEl.addEventListener('shown.bs.modal', event => {
+    myModalEl.addEventListener('shown.bs.modal', () => {
         loadConfigFromLocalStorage()
     })
     
     myModalEl = document.getElementById('viewGameModal')
-    myModalEl.addEventListener('hidden.bs.modal', event => {
+    myModalEl.addEventListener('hidden.bs.modal', () => {
         resetViewGameModal()
     })
 
     let notesEl = document.getElementById("notes")
-    notesEl.addEventListener('input', event => {
-        onNotesInput();
+    notesEl.addEventListener('input', () => {
+        onNotesInput()
     })
 
-    for (method of sortMethods) {
+    for (let method of sortMethods) {
         method.createDOMOption()
     }
 
-    for (method of groupMethods) {
+    for (let method of groupMethods) {
         method.createDOMOption()
     }
 
-    for (visual of gameTileVisuals) {
+    for (let visual of gameTileVisuals) {
         visual.createDOMOption()
     }
 
@@ -699,29 +698,30 @@ window.onload = function() {
     if (!loadConfigFromLocalStorage()) {
         (new bootstrap.Modal("#clientSettingsModal")).show()
     } else {
-        refreshPlaylist();
+        refreshPlaylist()
     }
 
-    urlParams = new URLSearchParams(window.location.search)
+    let urlParams = new URLSearchParams(window.location.search)
     if (urlParams.has("showGame")) {
         populateViewGameModalWithGame(Number(urlParams.get("showGame")), "Game")
     }
 }
 
-var searchTimeout;
+let searchTimeout
 function OnSearch(input) {
-    clearTimeout(searchTimeout);
+    clearTimeout(searchTimeout)
     searchTimeout = setTimeout(() => {
         UpdateSearch(input.value)
-    }, 1000);
+    }, 1000)
 }
+document.getElementById('searchInput').addEventListener("input", () => OnSearch(document.getElementById("searchInput")))
 
 function UpdateSearch(val) {
     console.log(val)
     let regex = new RegExp(val.toLowerCase())
     let tiles = document.getElementsByClassName("gametile")
-    for (tile of tiles) {
-        title = tile.querySelector(".gametitle").textContent
+    for (let tile of tiles) {
+        let title = tile.querySelector(".gametitle").textContent
         if (regex.test(title.toLowerCase())) {
             tile.hidden = false
         } else {
@@ -730,17 +730,18 @@ function UpdateSearch(val) {
     }
 }
 
-var addSearchTimeout;
-function OnSearchForAdd(input) {
+let addSearchTimeout
+function OnSearchForAdd() {
     clearTimeout(addSearchTimeout)
     addSearchTimeout = setTimeout(() => {
         UpdateAddSearch()
     }, 1000)
 }
+document.getElementById('addSearchInput').addEventListener("input", () => OnSearchForAdd())
 
 async function createAddGameTiles(gameInfos) {
     let addgametilecontainer = document.querySelector("#addgametilecontainer")
-    for (game of gameInfos)
+    for (let game of gameInfos)
         addgametilecontainer.appendChild(game.createTile(true))
     addAdditionalDataForAdd()
 }
@@ -754,16 +755,16 @@ async function doSearchQuery(query, offset = 0) {
     let spinner = document.getElementById("addgame-loading-spinner")
     spinner.setAttribute("class", "")
     
-    response = await postServer({
+    let response = await postServer({
         "op" : "search",
         "query" : query,
         "offset" : offset
-    });
+    })
 
     if (response.ok) {
-        body = await response.json()
+        let body = await response.json()
         preloadCovers(body)
-        infos = body['Games'].map(game => new GameInfo(game['id'], game['name'], Date.now()))
+        let infos = body['Games'].map(game => new GameInfo(game['id'], game['name'], Date.now()))
         createAddGameTiles(infos)
     }
 
@@ -772,7 +773,7 @@ async function doSearchQuery(query, offset = 0) {
 }
 
 function UpdateAddSearch() {
-    let query = document.querySelector("#addSearchInput").value;
+    let query = document.querySelector("#addSearchInput").value
     if (query == "") {
         resetAddGame()
         addPopularGames()
@@ -782,12 +783,12 @@ function UpdateAddSearch() {
     }
 }
 
-loadNextLocked = false;
+let loadNextLocked = false
 async function LoadNextAddGamePage() {
     if (!loadNextLocked) {
-        loadNextLocked = true;
+        loadNextLocked = true
         
-        let query = document.querySelector("#addSearchInput").value;
+        let query = document.querySelector("#addSearchInput").value
         if (query == "") {
             // add more popular
             await addPopularGames(document.querySelector("#addgametilecontainer").childElementCount)
@@ -797,27 +798,28 @@ async function LoadNextAddGamePage() {
             await doSearchQuery(query, document.querySelector("#addgametilecontainer").childElementCount)
         }
 
-        loadNextLocked = false;
+        loadNextLocked = false
     }
 }
 
 function resetAddGame() {
-    document.querySelector("#addgametilecontainer").textContent='';
-    document.querySelector("#addSearchInput").value = '';
+    document.querySelector("#addgametilecontainer").textContent=''
+    document.querySelector("#addSearchInput").value = ''
 }
+document.getElementById("addGameModalButton").addEventListener("click", resetAddGame)
 
 async function addPopularGames(offset = 0) {
     let spinner = document.getElementById("addgame-loading-spinner")
     spinner.setAttribute("class", "")
 
-    popularIds = await getPopular(offset);
+    let popularIds = await getPopular(offset)
 
     let body = { Games : popularIds.map(e => {return {id : e}})}
     preloadCovers(body)
     
     preloadGameFields(popularIds, ['name']).then(() => {
         createAddGameTiles(popularIds.map(id => new GameInfo(id, gameFieldsMap.get(id).name, Date.now())))
-    });
+    })
 
     spinner = document.getElementById("addgame-loading-spinner")
     spinner.setAttribute("class", "visually-hidden")
@@ -831,11 +833,12 @@ function onAddGameScrollEnd(divEl) {
     if (Math.abs(divEl.scrollTop - divEl.scrollHeight + divEl.clientHeight) <= 1) {
         console.log("scrolled to bottom!")
 
-        LoadNextAddGamePage();
+        LoadNextAddGamePage()
     }
 }
+document.getElementById("addGameScrollDiv").addEventListener("scrollend", ev => onAddGameScrollEnd(ev.srcElement))
 
-var viewSettings = {
+let viewSettings = {
     groupBy : "",
     sortBy : "",
     sortDir : "asc",
@@ -844,26 +847,26 @@ var viewSettings = {
     tileSize : 200
 }
 
-var sortMethods = []
+let sortMethods = []
 
 class SortMethod {
     constructor(name, displayName, methodAsyncFn) {
-        this.name = name;
-        this.displayName = displayName;
-        this.doSort = methodAsyncFn;
+        this.name = name
+        this.displayName = displayName
+        this.doSort = methodAsyncFn
     }
 
     register() {
         if (sortMethods.find(e => e.name == this.name))
             console.error(`SortMethod already registered! ${this.name}`)
 
-        sortMethods.push(this);
+        sortMethods.push(this)
     }
 
     createDOMOption() {
-        let newOption = document.querySelector("#sortby").appendChild(document.createElement("option"));
-        newOption.setAttribute("value", this.name);
-        newOption.textContent = this.displayName;
+        let newOption = document.querySelector("#sortby").appendChild(document.createElement("option"))
+        newOption.setAttribute("value", this.name)
+        newOption.textContent = this.displayName
     }
 
     async sort() {
@@ -879,31 +882,31 @@ class SortMethod {
     }
 }
 
-function registerSortMethod(name, displayName, methodAsyncFn) {
+export function registerSortMethod(name, displayName, methodAsyncFn) {
     let method = new SortMethod(name, displayName, methodAsyncFn)
     method.register()
 }
 
-var groupMethods = []
+let groupMethods = []
 
 class GroupMethod {
     constructor(name, displayName, methodAsyncFn) {
-        this.name = name;
-        this.displayName = displayName;
-        this.doGroups = methodAsyncFn;
+        this.name = name
+        this.displayName = displayName
+        this.doGroups = methodAsyncFn
     }
 
     register() {
         if (groupMethods.find(e => e.name == this.name))
             console.error(`GroupMethod already registered! ${this.name}`)
 
-        groupMethods.push(this);
+        groupMethods.push(this)
     }
 
     createDOMOption() {
-        let newOption = document.querySelector("#groupby").appendChild(document.createElement("option"));
-        newOption.setAttribute("value", this.name);
-        newOption.textContent = this.displayName;
+        let newOption = document.querySelector("#groupby").appendChild(document.createElement("option"))
+        newOption.setAttribute("value", this.name)
+        newOption.textContent = this.displayName
     }
 
     static Category(inDisplayName) {
@@ -923,7 +926,7 @@ class GroupMethod {
         let gametilecontainer = document.getElementById("gametilecontainer")
         let gameTiles = [...gametilecontainer.getElementsByClassName("gametile")]
 
-        let categories = await this.doGroups(gameTiles);
+        let categories = await this.doGroups(gameTiles)
 
         categories.forEach(category => {
             let categoryHeader = document.createElement("div")
@@ -931,27 +934,27 @@ class GroupMethod {
             categoryHeader.innerHTML = `<h1><b>${category.displayName}</b></h1>`
             gametilecontainer.appendChild(categoryHeader)
 
-            for (var tile of category.tiles) {
+            for (let tile of category.tiles) {
                 gametilecontainer.appendChild(tile)
             }
-        });
+        })
     }
 }
 
-function registerGroupMethod(name, displayName, methodAsyncFn) {
+export function registerGroupMethod(name, displayName, methodAsyncFn) {
     let method = new GroupMethod(name, displayName, methodAsyncFn)
     method.register()
 }
 
-var gameTileVisuals = [];
+let gameTileVisuals = []
 
 class GameTileVisual {
     constructor(name, displayName, methodAsyncFn, appliesToPlaylist = true, appliesToAdd = false, needsGameFields = []) {
-        this.name = name;
-        this.displayName = displayName;
-        this.methodAsyncFn = methodAsyncFn;
-        this.appliesToPlaylist = appliesToPlaylist;
-        this.appliesToAdd = appliesToAdd;
+        this.name = name
+        this.displayName = displayName
+        this.methodAsyncFn = methodAsyncFn
+        this.appliesToPlaylist = appliesToPlaylist
+        this.appliesToAdd = appliesToAdd
         this.needsGameFields = needsGameFields
     }
 
@@ -959,7 +962,7 @@ class GameTileVisual {
         if (gameTileVisuals.find(e => e.name == this.name))
             console.error(`GameTileVisual already registered! ${this.name}`)
 
-        gameTileVisuals.push(this);
+        gameTileVisuals.push(this)
     }
 
     async applyPlaylist(tile) {
@@ -978,8 +981,8 @@ class GameTileVisual {
     }
 
     createDOMOption() {
-        let div = document.querySelector("#showfields").appendChild(document.createElement("div"));
-        div.setAttribute("class", "form-check form-switch form-check-inline");
+        let div = document.querySelector("#showfields").appendChild(document.createElement("div"))
+        div.setAttribute("class", "form-check form-switch form-check-inline")
         let checkbox = div.appendChild(document.createElement("input"))
         checkbox.setAttribute("type", "checkbox")
         checkbox.setAttribute("role", "switch")
@@ -993,32 +996,32 @@ class GameTileVisual {
     }
 }
 
-function registerGameTileVisual(name, displayName, methodAsyncFn, appliesToPlaylist = true, appliesToAdd = false) {
-    let visual = new GameTileVisual(name, displayName, methodAsyncFn, appliesToPlaylist, appliesToAdd);
+export function registerGameTileVisual(name, displayName, methodAsyncFn, appliesToPlaylist = true, appliesToAdd = false) {
+    let visual = new GameTileVisual(name, displayName, methodAsyncFn, appliesToPlaylist, appliesToAdd)
     visual.register()
 }
 
-const ViewModalExtensionType = Object.freeze({
+export const ViewModalExtensionType = Object.freeze({
     Main : 'main',
     Sidebar : 'sidebar',
     SidebarTop : 'sidebar-top',
-});
+})
 
-var viewModalExtensions = []
+let viewModalExtensions = []
 
 class ViewModalExtension {
     constructor(name, displayName, methodAsyncFn, type = ViewModalExtensionType.Sidebar) {
-        this.type = type;
-        this.name = name;
-        this.displayName = displayName;
-        this.methodAsyncFn = methodAsyncFn;
+        this.type = type
+        this.name = name
+        this.displayName = displayName
+        this.methodAsyncFn = methodAsyncFn
     }
 
     register() {
         if (viewModalExtensions.find(e => e.name == this.name))
             console.error(`ViewModalExtension already registered! ${this.name}`)
 
-        viewModalExtensions.push(this);
+        viewModalExtensions.push(this)
     }
 
     async apply(gameId, modalBody) {
@@ -1032,7 +1035,7 @@ class ViewModalExtension {
     }
 }
 
-function registerViewModalExtension(name, displayName, methodAsyncFn, type = ViewModalExtensionType.Sidebar) {
+export function registerViewModalExtension(name, displayName, methodAsyncFn, type = ViewModalExtensionType.Sidebar) {
     let extension = new ViewModalExtension(name, displayName, methodAsyncFn, type)
     extension.register()
 }
@@ -1043,8 +1046,8 @@ async function applyViewModalExtensions(gameId, modalBody) {
     }
 }
 
-var linkButtonMap = new Map()
-function registerLinkButton(urlRegexPattern, buttonHtml) {
+let linkButtonMap = new Map()
+export function registerLinkButton(urlRegexPattern, buttonHtml) {
     linkButtonMap.set(urlRegexPattern, buttonHtml)
 }
 
@@ -1063,38 +1066,37 @@ function getLinkButton(url) {
                     ${(url.match(`\/\/(.*?)(?:\/|$)`))[1]}
                 </button>
             `
-
 }
 
 const viewSettingsVersion = Object.freeze({
     VersionIntroduced : 1,
     PlayDataIntroduced : 2
-});
+})
 
 function tryLoadViewSettings() {
     let stored = localStorage.getItem("viewSettings")
     if (stored != null) {
-        viewSettings = JSON.parse(stored);
+        viewSettings = JSON.parse(stored)
     }
 
     if (viewSettings.tileSize === undefined) {
-        viewSettings.tileSize = 200;
+        viewSettings.tileSize = 200
     }
 
     if (viewSettings.tileDisplay === undefined) {
-        viewSettings.tileDisplay = "crop";
+        viewSettings.tileDisplay = "crop"
     }
 
     if (viewSettings.version === undefined) {
-        viewSettings.version = viewSettingsVersion.VersionIntroduced;
+        viewSettings.version = viewSettingsVersion.VersionIntroduced
     }
     
     if (viewSettings.version < viewSettingsVersion.PlayDataIntroduced) {
         if (!viewSettings.showfields.includes("playdata")) {
-            viewSettings.showfields.push("playdata");
+            viewSettings.showfields.push("playdata")
         }
 
-        viewSettings.version = viewSettingsVersion.PlayDataIntroduced;
+        viewSettings.version = viewSettingsVersion.PlayDataIntroduced
     }
 
     applyTileDisplaySetting()
@@ -1109,11 +1111,11 @@ function saveViewSettings() {
 }
 
 function cancelViewSettings() {
-    tryLoadViewSettings();
+    tryLoadViewSettings()
 
-    document.querySelector('#groupby').value = viewSettings.groupBy;
-    document.querySelector("#sortby").value = viewSettings.sortBy;
-    document.querySelector("#displaytilesas").value = viewSettings.tileDisplay;
+    document.querySelector('#groupby').value = viewSettings.groupBy
+    document.querySelector("#sortby").value = viewSettings.sortBy
+    document.querySelector("#displaytilesas").value = viewSettings.tileDisplay
 
     let sortDirButton = document.querySelector("#sortdirectionbtn")
     let isAsc = viewSettings.sortDir == "asc"
@@ -1121,42 +1123,44 @@ function cancelViewSettings() {
     setElementVisibility(sortDirButton.querySelector("#ascendingicon"), isAsc)
     setElementVisibility(sortDirButton.querySelector("#descendingicon"), !isAsc)
 
-    for (checkbox of document.querySelector("#showfields").getElementsByTagName("input")) {
-        checkbox.checked = viewSettings.showfields.indexOf(checkbox.getAttribute("showfield")) != -1;
+    for (let checkbox of document.querySelector("#showfields").getElementsByTagName("input")) {
+        checkbox.checked = viewSettings.showfields.indexOf(checkbox.getAttribute("showfield")) != -1
     }
 }
+document.getElementById("cancelViewSettings").addEventListener("click", cancelViewSettings)
 
 function applyTileDisplaySetting() {
     if (viewSettings.tileDisplay == "crop") {
-        document.documentElement.style.setProperty("--gametile-aspect", `1`);
+        document.documentElement.style.setProperty("--gametile-aspect", `1`)
     }
     else {
-        document.documentElement.style.setProperty("--gametile-aspect", `260/350`);
+        document.documentElement.style.setProperty("--gametile-aspect", `260/350`)
     }
 }
 
 function applyViewSettings() {
     // check for group by released
-    viewSettings.groupBy = document.querySelector('#groupby').value;
-    viewSettings.sortBy = document.querySelector('#sortby').value;
-    viewSettings.sortDir = document.querySelector("#sortdirectionbtn").getAttribute("value");
-    viewSettings.tileDisplay = document.querySelector("#displaytilesas").value;
+    viewSettings.groupBy = document.querySelector('#groupby').value
+    viewSettings.sortBy = document.querySelector('#sortby').value
+    viewSettings.sortDir = document.querySelector("#sortdirectionbtn").getAttribute("value")
+    viewSettings.tileDisplay = document.querySelector("#displaytilesas").value
 
     viewSettings.showfields = []
     //get showfields
-    for (checkbox of document.querySelector("#showfields").getElementsByTagName("input")) {
+    for (let checkbox of document.querySelector("#showfields").getElementsByTagName("input")) {
         if (checkbox.checked)
             viewSettings.showfields.push(checkbox.getAttribute("showfield"))
     }
 
     if (coverMap.size > 0 && coverMap.values().next().value.includes("t_cover_big_2x") != viewSettings.tileSize > 250) {
-        coverMap.clear();
+        coverMap.clear()
     }
 
-    applyTileDisplaySetting();
-    saveViewSettings();
+    applyTileDisplaySetting()
+    saveViewSettings()
     refreshPlaylist()
 }
+document.getElementById("applyViewSettings").addEventListener("click", applyViewSettings)
 
 async function doViewSettings() {
     let sortMethod = sortMethods.find(e => e.name == viewSettings.sortBy)
@@ -1175,11 +1179,12 @@ function toggleSortDirection() {
     setElementVisibility(sortDirButton.querySelector("#ascendingicon"), !isAsc)
     setElementVisibility(sortDirButton.querySelector("#descendingicon"), isAsc)
 }
+document.getElementById("sortdirectionbtn").addEventListener("click", toggleSortDirection)
 
 function resetViewGameModal() {
     let modal = document.querySelector("#viewGameModal")
     modal.querySelector(".modal-title").textContent = "View Game"
-    modal.querySelector("#view-video-container").textContent = "";
+    modal.querySelector("#view-video-container").textContent = ""
     modal.querySelector('#releasedate').textContent = ""
     modal.querySelector('#platforms').textContent = ""
     modal.querySelector('#howlongtobeat').setAttribute("href", "")
@@ -1198,36 +1203,42 @@ function resetViewGameModal() {
     }
 }
 
-function viewAddRemoveButtonClicked(button) {
+function viewAddRemoveButtonClicked(ev) {
+    let button = ev.srcElement
     let id = Number(button.getAttribute("gameId"))
     let title = button.getAttribute("gameTitle")
-    if (button.getAttribute("id") == "addbutton") {
+    if (button.getAttribute("id") == "viewaddbutton") {
         addGame(id, title)
-        setElementVisibility(button.parentElement.querySelector('#removebutton'), true)
+        setElementVisibility(button.parentElement.querySelector('#viewremovebutton'), true)
         setElementVisibility(button, false)
     } else {
         removeGame(id, title)
-        setElementVisibility(button.parentElement.querySelector('#addbutton'), true)
+        setElementVisibility(button.parentElement.querySelector('#viewaddbutton'), true)
         setElementVisibility(button, false)
     }
 }
+document.getElementById("viewaddbutton").addEventListener("click", viewAddRemoveButtonClicked)
+document.getElementById("viewremovebutton").addEventListener("click", viewAddRemoveButtonClicked)
 
 function onNotesInput() {
     let notesControlEl = document.getElementById("notesControls")
     setElementVisibility(notesControlEl, true)
 }
 
-async function viewCancelNoteButtonClicked(button) {
+async function viewCancelNoteButtonClicked(ev) {
+    let button = ev.srcElement
     let id = Number(button.getAttribute("gameId"))
     let note = document.querySelector("#notes")
 
-    note.value = await GetNote(id);
+    note.value = await GetNote(id)
 
     let notesControlEl = document.getElementById("notesControls")
     setElementVisibility(notesControlEl, false)
 }
+document.getElementById("cancelNote").addEventListener("click", viewCancelNoteButtonClicked)
 
-function viewSaveNoteButtonClicked(button) {
+function viewSaveNoteButtonClicked(ev) {
+    let button = ev.srcElement
     let id = Number(button.getAttribute("gameId"))
     let note = document.querySelector("#notes")
 
@@ -1236,8 +1247,10 @@ function viewSaveNoteButtonClicked(button) {
     let notesControlEl = document.getElementById("notesControls")
     setElementVisibility(notesControlEl, false)
 }
+document.getElementById("saveNote").addEventListener("click", viewSaveNoteButtonClicked)
 
-async function populateViewGameModal(viewButton) {
+async function populateViewGameModal(ev) {
+    let viewButton = ev.srcElement
     let gameTile = viewButton.closest(".gametile")
     let titleText = gameTile.querySelector(".gametitle").textContent
     let id = Number(gameTile.getAttribute("gameid"))
@@ -1253,8 +1266,8 @@ async function populateViewGameModalWithGame(id, titleText) {
     let title = modal.querySelector(".modal-title")
     title.textContent = titleText
 
-    let addButton = modal.querySelector('#addbutton')
-    let removeButton = modal.querySelector('#removebutton')
+    let addButton = modal.querySelector('#viewaddbutton')
+    let removeButton = modal.querySelector('#viewremovebutton')
     let saveNoteButton = modal.querySelector('#saveNote')
     let resetNoteButton = modal.querySelector('#cancelNote')
     addButton.setAttribute("gameId", id)
@@ -1266,7 +1279,7 @@ async function populateViewGameModalWithGame(id, titleText) {
     setElementVisibility(addButton, registeredPlaylistIds.indexOf(id) == -1)
     setElementVisibility(removeButton, registeredPlaylistIds.indexOf(id) != -1)
 
-    viewCancelNoteButtonClicked(resetNoteButton)
+    viewCancelNoteButtonClicked({srcElement:resetNoteButton})
 
     let hltb = preloadHowLongToBeat([id])
     await preloadGameFields([id], ['name', 'summary', 'videos', 'first_release_date', 'platforms', 'franchises', 'url'], game => {
@@ -1289,13 +1302,13 @@ async function populateViewGameModalWithGame(id, titleText) {
     let videos = await preloadVideos()
 
     let videoContainer = modal.querySelector("#view-video-container")
-    videoContainer.textContent = "";
+    videoContainer.textContent = ""
 
     let carousel = videoContainer.appendChild(document.createElement("div"))
     carousel.setAttribute("id", "viewVideoCarousel")
     carousel.setAttribute("class", "carousel slide")
     
-    carousel.addEventListener('slide.bs.carousel', event => {
+    carousel.addEventListener('slide.bs.carousel', () => {
         let c = document.getElementById("viewVideoCarousel")
         let v = c.querySelector(".carousel-item.active iframe")
         v.setAttribute("src", v.getAttribute("src"))
@@ -1309,8 +1322,8 @@ async function populateViewGameModalWithGame(id, titleText) {
 
     //gameInfo = gameFieldsMap.get(id)
     if (gameInfo.videos) {
-        for (videoid of gameInfo.videos) {
-            let video = videos.get(videoid);
+        for (let videoid of gameInfo.videos) {
+            let video = videos.get(videoid)
             let indicator = carouselIndicators.appendChild(document.createElement("button"))
             indicator.setAttribute("type", "button")
             indicator.setAttribute("data-bs-target", "#viewVideoCarousel")
@@ -1348,7 +1361,7 @@ async function populateViewGameModalWithGame(id, titleText) {
     }
     
     if (gameInfo.first_release_date) {
-        releaseDate = modal.querySelector('#releasedate');
+        let releaseDate = modal.querySelector('#releasedate')
         if (gameInfo.first_release_date == 'TBA') {
             releaseDate.textContent = gameInfo.first_release_date
         }
@@ -1358,7 +1371,7 @@ async function populateViewGameModalWithGame(id, titleText) {
         }
     }
 
-    await preloadPrice(id);
+    await preloadPrice(id)
     let priceCardEl = document.getElementById("pricecard")
     if (gameInfo.price && gameInfo.price.final_formatted != undefined) {
         let priceEl = document.getElementById("price")
@@ -1376,7 +1389,7 @@ async function populateViewGameModalWithGame(id, titleText) {
         ul.setAttribute("class", "list-group")
 
         let ps = []
-        for (platformId of gameInfo.platforms) {
+        for (let platformId of gameInfo.platforms) {
             let meta = platformMetaInfo.get(platformId)
             ps.push({
                 slug: meta.slug,
@@ -1386,17 +1399,21 @@ async function populateViewGameModalWithGame(id, titleText) {
         }
 
         ps.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase())
-        for (p of ps) {
-            ul.innerHTML += `<li class="list-group-item" onclick="spreadsheetGen(${id}, '${p.slug}')">${p.icon} ${p.name}</li>`
+        for (let p of ps) {
+            let li = document.createElement("li")
+            li.setAttribute("class", "list-group-item")
+            li.innerHTML = `${p.icon} ${p.name}`
+            li.addEventListener("click", () => spreadsheetGen(id, p.slug))
+            ul.appendChild(li)
         }
     }
 
-    await preloadWebsites(ids = [id])
+    await preloadWebsites([id])
     gameInfo = gameFieldsMap.get(id)
     if (gameInfo.websites) {
         let websites = modal.querySelector('#websites')
 
-        for (website of gameInfo.websites) {
+        for (let website of gameInfo.websites) {
             let linkContent = getLinkButton(website.url)
             
             websites.innerHTML += `<a href="${website.url}" target="_blank">${linkContent}</a>`
@@ -1410,14 +1427,14 @@ async function populateViewGameModalWithGame(id, titleText) {
             }
         }
 
-        children = [...websites.children].sort((a, b) => a.textContent.trim() > b.textContent.trim())
-        for (c of children)
+        let children = [...websites.children].sort((a, b) => a.textContent.trim() > b.textContent.trim())
+        for (let c of children)
             websites.appendChild(c)
     }
 
     if (gameInfo.franchises) {
-        franchises = await loadFranchise(gameInfo.franchises)
-        gameIds = franchises.map(f => f.games).reduce((t, c)=>t.concat(c))
+        let franchises = await loadFranchise(gameInfo.franchises)
+        let gameIds = franchises.map(f => f.games).reduce((t, c)=>t.concat(c))
         await preloadGameFields(gameIds, ['name'],e=>e , [0])
         preloadCovers(gameIds.reduce((t,c) => {
             if (t.Games)
@@ -1425,17 +1442,17 @@ async function populateViewGameModalWithGame(id, titleText) {
             else
                 t = {Games:[{id:c}]}
             return t
-        }));
+        }))
         let franchiseCard = modal.querySelector("#franchisecard")
         setElementVisibility(franchiseCard, true)
-        for (franchise of franchises) {
+        for (let franchise of franchises) {
             franchiseCard.appendChild(document.createElement("h5")).textContent = `Other ${franchise.name} Games`
             let div = franchiseCard.appendChild(document.createElement("div"))
             div.setAttribute("class", "d-flex flex-nowrap overflow-auto")
 
-            for (gid of franchise.games) {
+            for (let gid of franchise.games) {
                 if (gameFieldsMap.has(gid)) {
-                    g = new GameInfo(gid, gameFieldsMap.get(gid).name, Date.now())
+                    let g = new GameInfo(gid, gameFieldsMap.get(gid).name, Date.now())
                     div.appendChild(g.createTile(true))
                 }
             }
@@ -1458,9 +1475,9 @@ async function populateViewGameModalWithGame(id, titleText) {
 }
 
 async function spreadsheetGen(gameId, platformSlug) {
-    gameInfo = gameFieldsMap.get(gameId)
+    let gameInfo = gameFieldsMap.get(gameId)
 
-    spreadsheetPlatformMap = new Map([
+    const spreadsheetPlatformMap = new Map([
         ['android', 'Android'],
         ['3ds', 'Nintendo 3DS'],
         ['n64', 'Nintendo 64'],
@@ -1507,7 +1524,7 @@ async function spreadsheetGen(gameId, platformSlug) {
     let platform = platformSlug
     if (spreadsheetPlatformMap.has(platform)) platform = spreadsheetPlatformMap.get(platform)
 
-    const shortDateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'short' });
+    const shortDateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'short' })
     let release = new Date(gameInfo.first_release_date)
     release = shortDateFormat.format(release)
 
@@ -1519,15 +1536,15 @@ async function spreadsheetGen(gameId, platformSlug) {
 }
 
 function saveClientSettings() {
-    serverAddr = document.querySelector("#serverAddressInput").value;
-    userName = document.querySelector("#userDisplayNameInput").value;
-    playlistName = document.querySelector("#playlistNameInput").value;
+    let serverAddr = document.querySelector("#serverAddressInput").value
+    let userName = document.querySelector("#userDisplayNameInput").value
+    let playlistName = document.querySelector("#playlistNameInput").value
 
-    localStorage.setItem("playlistServerAddress", serverAddr);
-    localStorage.setItem("userDisplayName", userName);
-    localStorage.setItem("playlistName", playlistName);
+    localStorage.setItem("playlistServerAddress", serverAddr)
+    localStorage.setItem("userDisplayName", userName)
+    localStorage.setItem("playlistName", playlistName)
 
-    prevPlaylists = JSON.parse(localStorage.getItem("previouslyUsedPlaylists"))
+    let prevPlaylists = JSON.parse(localStorage.getItem("previouslyUsedPlaylists"))
     if (prevPlaylists == null) {
         prevPlaylists = []
     }
@@ -1537,7 +1554,7 @@ function saveClientSettings() {
         prevPlaylists.pop()
     localStorage.setItem("previouslyUsedPlaylists", JSON.stringify(prevPlaylists))
 
-    prevServers = JSON.parse(localStorage.getItem("previouslyUsedServers"))
+    let prevServers = JSON.parse(localStorage.getItem("previouslyUsedServers"))
     if (prevServers == null) {
         prevServers = []
     }
@@ -1549,104 +1566,121 @@ function saveClientSettings() {
 
     loadConfigFromLocalStorage()
 
-    refreshPlaylist();
+    refreshPlaylist()
 }
+document.getElementById("saveClientSettings").addEventListener("click", saveClientSettings)
 
 function loadConfigFromLocalStorage() {
-    serverAddr = localStorage.getItem("playlistServerAddress")
+    let serverAddr = localStorage.getItem("playlistServerAddress")
     if (serverAddr != null) {
-        config.serveraddress = serverAddr;
+        config.serveraddress = serverAddr
     }
     else {
-        config.serveraddress = "";
+        config.serveraddress = ""
     }
     
-    userName = localStorage.getItem("userDisplayName")
+    let userName = localStorage.getItem("userDisplayName")
     if (userName != null) {
-        config.userName = userName;
+        config.userName = userName
     }
     else {
-        config.userName = "";
+        config.userName = ""
     }
     
-    playlistName = localStorage.getItem("playlistName")
+    let playlistName = localStorage.getItem("playlistName")
     if (playlistName != null) {
-        config.playlistName = playlistName;
+        config.playlistName = playlistName
     }
     else {
-        config.playlistName = "";
+        config.playlistName = ""
     }
 
-    prevServers = JSON.parse(localStorage.getItem("previouslyUsedServers"))
+    let prevServers = JSON.parse(localStorage.getItem("previouslyUsedServers"))
     if (prevServers == null) {
         prevServers = []
     }
 
-    prevPlaylists = JSON.parse(localStorage.getItem("previouslyUsedPlaylists"))
+    let prevPlaylists = JSON.parse(localStorage.getItem("previouslyUsedPlaylists"))
     if (prevPlaylists == null) {
         prevPlaylists = []
     }
 
-    document.querySelector("#serverAddressInput").value = config.serveraddress;
-    document.querySelector("#userDisplayNameInput").value = config.userName;
-    document.querySelector("#playlistNameInput").value = config.playlistName;
+    document.querySelector("#serverAddressInput").value = config.serveraddress
+    document.querySelector("#userDisplayNameInput").value = config.userName
+    document.querySelector("#playlistNameInput").value = config.playlistName
 
-    prevServersDropdown = document.querySelector("#previousServersDropdown")
-    prevServersDropdown.innerHTML = "";
+    let prevServersDropdown = document.querySelector("#previousServersDropdown")
+    prevServersDropdown.innerHTML = ""
 
     prevServers.forEach(e => {
-        prevServersDropdown.innerHTML += `<li><a class="dropdown-item" onclick="prevServerClicked(this)">${e}</a></li>`
+        let a = document.createElement("a")
+        a.setAttribute("class", "dropdown-item")
+        a.innerHTML = `${e}`
+        a.addEventListener("click", ev => prevServerClicked(ev.srcElement))
+
+        let li = document.createElement("li")
+        li.appendChild(a)
+        prevServersDropdown.appendChild(li)
     })
 
-    prevPlaylistsDropdown = document.querySelector("#previousPlaylistsDropdown")
-    prevPlaylistsDropdown.innerHTML = "";
+    let prevPlaylistsDropdown = document.querySelector("#previousPlaylistsDropdown")
+    prevPlaylistsDropdown.innerHTML = ""
 
     prevPlaylists.forEach(e => {
-        prevPlaylistsDropdown.innerHTML += `<li><a class="dropdown-item" onclick="prevPlaylistClicked(this)">${e}</a></li>`
+        let a = document.createElement("a")
+        a.setAttribute("class", "dropdown-item")
+        a.innerHTML = `${e}`
+        a.addEventListener("click", ev => prevPlaylistClicked(ev.srcElement))
+
+        let li = document.createElement("li")
+        li.appendChild(a)
+        prevPlaylistsDropdown.appendChild(li)
     })
 
-    return (serverAddr != null) && (userName != null) && (playlistName != null);
+    return (serverAddr != null) && (userName != null) && (playlistName != null)
 }
 
 function prevServerClicked(item) {
-    document.querySelector("#serverAddressInput").value = item.textContent;
+    document.querySelector("#serverAddressInput").value = item.textContent
 }
 
 function prevPlaylistClicked(item) {
-    document.querySelector("#playlistNameInput").value = item.textContent;
+    document.querySelector("#playlistNameInput").value = item.textContent
 }
 
 function copyViewGameLink() {
     let modal = document.querySelector("#viewGameModal")
-    let gameId = modal.getAttribute("gameId");
+    let gameId = modal.getAttribute("gameId")
 
     let string = window.location.origin + window.location.pathname + `?showGame=${gameId}`
     navigator.clipboard.writeText(string)
 }
+document.getElementById("copyViewGameLink").addEventListener("click", copyViewGameLink)
 
 async function screenshotPlaylist() {
     let loadingModal = (new bootstrap.Modal("#loadingModal"))
-    loadingModal.show();
+    loadingModal.show()
 
-    let container = document.querySelector("#gametilecontainer");
-    let columns = Math.trunc(Math.sqrt(container.children.length));
+    let container = document.querySelector("#gametilecontainer")
+    let columns = Math.trunc(Math.sqrt(container.children.length))
     if (viewSettings.tileDisplay == "full") {
-        columns = Math.trunc(columns * (350/260));
+        columns = Math.trunc(columns * (350/260))
     }
 
     container.setAttribute("style", `max-width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px !important; width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px !important`)
-    dataUrl = await domtoimage.toPng(container, {bgcolor:"#212529"})
+    let dataUrl = await domtoimage.toPng(container, {bgcolor:"#212529"})
     
-    const now = new Date();
-    var link = document.createElement('a');
-    link.download = `Playlist-${config.playlistName}-${now.getMonth()}-${now.getDay()}-${now.getFullYear()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.png`;
-    link.href = dataUrl;
+    const now = new Date()
+    let link = document.createElement('a')
+    link.download = `Playlist-${config.playlistName}-${now.getMonth()}-${now.getDay()}-${now.getFullYear()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.png`
+    link.href = dataUrl
     link.click()
 
-    container.setAttribute("style", "");
+    container.setAttribute("style", "")
 
-    loadingModal.hide();
+    loadingModal.hide()
 }
+document.getElementById("screenshotPlaylist").addEventListener("click", screenshotPlaylist)
 
 function viewRandomGame() {
     let gametilecontainer = document.getElementById("gametilecontainer")
@@ -1660,3 +1694,4 @@ function viewRandomGame() {
     let id = Number(gameTile.getAttribute("gameid"))
     populateViewGameModalWithGame(id, titleText)
 }
+document.getElementById("viewRandomGame").addEventListener("click", viewRandomGame)
