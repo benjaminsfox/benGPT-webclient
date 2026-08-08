@@ -17,8 +17,8 @@ function setElementVisibility(htmlElement, newVis) {
 export function dateToRelativeString(date) {
     if (!date.getDate()) return ""
     let days = Math.round((date - Date.now()) / 86400000)
-    
-    let formatter = new Intl.RelativeTimeFormat("en", {numeric: "auto"})
+
+    let formatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" })
 
     if (Math.abs(days) > 365) {
         let years = Math.round(days / 365)
@@ -47,10 +47,10 @@ function dropHandler(ev, id) {
     const data = ev.dataTransfer.getData("text")
     console.log(`${data} dropped on ${id}`)
     moveBefore(Number(data), Number(id))
-    
+
 }
 
-class GameInfo { 
+class GameInfo {
     constructor(id, title, timeStamp, addedBy = 'unk') {
         this.id = id
         this.title = title
@@ -58,7 +58,7 @@ class GameInfo {
         this.addedBy = addedBy
     }
 
-    createTile(forAdd=false) {
+    createTile(forAdd = false) {
         let gameTile = document.createElement("div")
         gameTile.setAttribute("class", "gametile mx-2 my-2")
         gameTile.setAttribute("gameId", this.id)
@@ -76,7 +76,7 @@ class GameInfo {
         let image = card.appendChild(document.createElement("img"))
         image.setAttribute("class", "gameimage rounded")
         if (coverMap.has(this.id))
-            image.setAttribute("src", coverMap.get(this.id))    
+            image.setAttribute("src", coverMap.get(this.id))
         else
             image.setAttribute("src", "resource/missing_cover.png")
         let gameoverlay = card.appendChild(document.createElement("div"))
@@ -102,7 +102,7 @@ class GameInfo {
         viewButton.textContent = "View"
         return gameTile
     }
-    
+
     populateControlsForPlaylist(controls) {
         let bottom = controls.appendChild(document.createElement("div"))
         bottom.setAttribute("class", "d-flex justify-content-between align-items-center")
@@ -118,7 +118,7 @@ class GameInfo {
         timeStamp.setAttribute("class", "text-body-secondary")
         timeStamp.textContent = "Added " + dateToRelativeString(this.timeStamp)
     }
-    
+
     populateControlsForAdd(controls) {
         let bottom = controls.appendChild(document.createElement("div"))
         bottom.setAttribute("class", "d-flex justify-content-between align-items-center")
@@ -177,9 +177,9 @@ async function preloadCovers(rawJson) {
     ids.sort()
 
     let response = await postServer({
-            "op" : "getCovers",
-            "ids" : ids
-        })
+        "op": "getCovers",
+        "ids": ids
+    })
 
     if (response.ok) {
         let body = await response.json()
@@ -207,11 +207,11 @@ export async function preloadGameFields(ids, fields, postprocessfn = (e => e), g
     })
     ids = ids.sort()
 
-    let doFetch = async function(withIds) {
+    let doFetch = async function (withIds) {
         let body = {
-            "op" : "getGameFields",
-            "ids" : withIds,
-            "fields" : fields
+            "op": "getGameFields",
+            "ids": withIds,
+            "fields": fields
         }
         if (gameTypes) body["game_types"] = gameTypes
         let response = await postServer(body)
@@ -264,10 +264,10 @@ async function getPopular(offset = 0, num = 30, pop_type = 1 + Math.floor(Math.r
 
 
     let response = await postServer({
-        "op" : "getPopular",
-        "num" : num,
-        "pop_type" : pop_type,
-        "offset" : offset
+        "op": "getPopular",
+        "num": num,
+        "pop_type": pop_type,
+        "offset": offset
     })
 
     if (response.ok) {
@@ -280,11 +280,11 @@ async function getPopular(offset = 0, num = 30, pop_type = 1 + Math.floor(Math.r
 
 export async function preloadWebsites(ids = [...document.getElementsByClassName("gametile")].map(gameTile => Number(gameTile.getAttribute("gameId")))) {
     ids = ids.filter(id => (gameFieldsMap.has(id) && !gameFieldsMap.get(id).websites))
-    
-    let doFetch = async function(withIds) {
+
+    let doFetch = async function (withIds) {
         let response = await postServer({
-            "op" : "getWebsites",
-            "ids" : withIds
+            "op": "getWebsites",
+            "ids": withIds
         })
 
         if (response.ok) {
@@ -313,8 +313,8 @@ export async function preloadWebsites(ids = [...document.getElementsByClassName(
 
 export async function preloadPrice(id) {
     let response = await postServer({
-        "op" : "getPrice",
-        "id" : id
+        "op": "getPrice",
+        "id": id
     })
 
     if (response.ok) {
@@ -331,8 +331,8 @@ export async function preloadPrice(id) {
 
 async function loadFranchise(ids) {
     let response = await postServer({
-        "op" : "getFranchises",
-        "ids" : ids
+        "op": "getFranchises",
+        "ids": ids
     })
 
     if (response.ok) {
@@ -342,14 +342,14 @@ async function loadFranchise(ids) {
 }
 
 let howLongToBeatMap = new Map()
-export async function preloadHowLongToBeat(ids = [...document.getElementsByClassName("gametile")].map(t=>Number(t.getAttribute('gameId')))) {
-    ids = ids.filter(e=>!howLongToBeatMap.has(e))
+export async function preloadHowLongToBeat(ids = [...document.getElementsByClassName("gametile")].map(t => Number(t.getAttribute('gameId')))) {
+    ids = ids.filter(e => !howLongToBeatMap.has(e))
     ids.sort()
 
-    let doFetch = async function(withIds) {
+    let doFetch = async function (withIds) {
         let response = await postServer({
-            "op" : "getHltb",
-            "ids" : withIds
+            "op": "getHltb",
+            "ids": withIds
         })
 
         if (response.ok) {
@@ -382,10 +382,10 @@ export async function preloadVideos() {
     }
     ids.sort()
 
-    let doFetch = async function(withIds) {
+    let doFetch = async function (withIds) {
         let response = await postServer({
-            "op" : "getVideos",
-            "ids" : withIds
+            "op": "getVideos",
+            "ids": withIds
         })
 
         if (response.ok) {
@@ -413,14 +413,14 @@ export function resetPlayData() {
     playDataMap = new Map()
 }
 
-export async function preloadPlayData(ids = [...document.getElementsByClassName("gametile")].map(t=>Number(t.getAttribute('gameId')))) {
-    ids = ids.filter(e=>!playDataMap.has(Number(e)))
+export async function preloadPlayData(ids = [...document.getElementsByClassName("gametile")].map(t => Number(t.getAttribute('gameId')))) {
+    ids = ids.filter(e => !playDataMap.has(Number(e)))
     ids.sort()
 
-    let doFetch = async function(withIds) {
+    let doFetch = async function (withIds) {
         let response = await postServer({
-            "op" : "getPlayData",
-            "ids" : withIds
+            "op": "getPlayData",
+            "ids": withIds
         })
 
         if (response.ok) {
@@ -435,7 +435,7 @@ export async function preloadPlayData(ids = [...document.getElementsByClassName(
         lastResponseLen = batch.length
         for (let playDataId in batch) {
             playDataMap.set(Number(playDataId), batch[playDataId])
-            ids = ids.filter(e=> e != Number(playDataId))
+            ids = ids.filter(e => e != Number(playDataId))
         }
     }
 
@@ -452,17 +452,17 @@ let platformMetaMap = new Map()
 export async function preloadPlatformMetaInfo() {
     let ids = []
     for (let gameInfo of gameFieldsMap) {
-        if(gameInfo[1].platforms)
+        if (gameInfo[1].platforms)
             for (let id of gameInfo[1].platforms)
                 if (!platformMetaMap.has(id))
                     ids.push(id)
     }
     ids.sort()
 
-    let doFetch = async function(withIds) {
+    let doFetch = async function (withIds) {
         let response = await postServer({
-            "op" : "getPlatforms",
-            "ids" : withIds
+            "op": "getPlatforms",
+            "ids": withIds
         })
 
         if (response.ok) {
@@ -477,7 +477,7 @@ export async function preloadPlatformMetaInfo() {
         lastResponseLen = batch.length
         for (let game of batch) {
             if ('id' in game && 'name' in game && 'slug' in game)
-                platformMetaMap.set(game['id'], { name : game['name'], slug : game['slug']})
+                platformMetaMap.set(game['id'], { name: game['name'], slug: game['slug'] })
             ids = ids.filter(val => val != game['id'])
         }
     }
@@ -520,7 +520,7 @@ async function refreshPlaylist() {
     let spinner = document.getElementById("playlist-loading-spinner")
     setElementVisibility(spinner, true)
     setElementVisibility(gametilecontainer, false)
-    
+
     let response = null
 
     try {
@@ -531,28 +531,28 @@ async function refreshPlaylist() {
         if (e instanceof TypeError) {
             alert("The server could not be reached. Perhaps your browser is blocking it due to my bad SSL certificate? Pressing ok will attempt to connect to the server directly. If your browser warns you, press the 'Take me there anyway' button, then come back here.")
             location.href = config.serveraddress
-        } 
+        }
     }
-    
+
     if (response.ok) {
         let json = await response.json()
-        
+
         preloadCovers(json)
-        
+
         let tileContainer = document.getElementById("gametilecontainer")
         for (let game of json['Games']) {
             registeredPlaylistIds.push(game['id'])
             let g = new GameInfo(game['id'], game['name'], game['addedTimestamp'], game['addedBy'])
             tileContainer.appendChild(g.createTile())
-        } 
+        }
     }
-        
+
     await doViewSettings()
 
     setElementVisibility(spinner, false)
     setElementVisibility(gametilecontainer, true)
-    
-    addAdditionalDataForPlaylist()    
+
+    addAdditionalDataForPlaylist()
 }
 document.getElementById("refreshPlaylist").addEventListener("click", refreshPlaylist)
 
@@ -592,9 +592,9 @@ async function addAdditionalDataForAdd() {
 
 function removeGame(id) {
     postServer({
-        "playlist" : config.playlistName,
-        "op" : "sub",
-        "id" : id
+        "playlist": config.playlistName,
+        "op": "sub",
+        "id": id
     }).then(response => {
         if (response.ok) {
             refreshPlaylist()
@@ -604,10 +604,10 @@ function removeGame(id) {
 
 function addGame(id) {
     postServer({
-        "playlist" : config.playlistName,
-        "op" : "add",
-        "id" : id,
-        "user" : config.userName
+        "playlist": config.playlistName,
+        "op": "add",
+        "id": id,
+        "user": config.userName
     }).then(response => {
         if (response.ok) {
             refreshPlaylist()
@@ -617,10 +617,10 @@ function addGame(id) {
 
 function moveBefore(firstId, secondId) {
     postServer({
-        "playlist" : config.playlistName,
-        "op" : "moveBefore",
-        "id1" : firstId,
-        "id2" : secondId
+        "playlist": config.playlistName,
+        "op": "moveBefore",
+        "id1": firstId,
+        "id2": secondId
     }).then(response => {
         if (response.ok) {
             //alert(`Adding Game ${id}, ${title}`)
@@ -631,9 +631,9 @@ function moveBefore(firstId, secondId) {
 
 async function GetNote(id) {
     let response = await postServer({
-        "playlist" : config.playlistName,
-        "op" : "getNote",
-        "id" : id
+        "playlist": config.playlistName,
+        "op": "getNote",
+        "id": id
     })
 
     if (response.ok) {
@@ -644,14 +644,14 @@ async function GetNote(id) {
 
 function SetNote(id, note) {
     postServer({
-        "playlist" : config.playlistName,
-        "op" : "setNote",
-        "id" : id,
-        "note" : note
+        "playlist": config.playlistName,
+        "op": "setNote",
+        "id": id,
+        "note": note
     })
 }
 
-window.onload = function() {
+window.onload = function () {
     let myModalEl = document.getElementById('addGameModal')
     myModalEl.addEventListener('hidden.bs.modal', () => {
         resetAddGame()
@@ -659,17 +659,17 @@ window.onload = function() {
     myModalEl.addEventListener('shown.bs.modal', () => {
         initAddGame()
     })
-    
+
     myModalEl = document.getElementById('settingsModal')
     myModalEl.addEventListener('hidden.bs.modal', () => {
         cancelViewSettings()
     })
-    
+
     myModalEl = document.getElementById('clientSettingsModal')
     myModalEl.addEventListener('shown.bs.modal', () => {
         loadConfigFromLocalStorage()
     })
-    
+
     myModalEl = document.getElementById('viewGameModal')
     myModalEl.addEventListener('hidden.bs.modal', () => {
         resetViewGameModal()
@@ -754,11 +754,11 @@ async function doSearchQuery(query, offset = 0) {
 
     let spinner = document.getElementById("addgame-loading-spinner")
     spinner.setAttribute("class", "")
-    
+
     let response = await postServer({
-        "op" : "search",
-        "query" : query,
-        "offset" : offset
+        "op": "search",
+        "query": query,
+        "offset": offset
     })
 
     if (response.ok) {
@@ -787,7 +787,7 @@ let loadNextLocked = false
 async function LoadNextAddGamePage() {
     if (!loadNextLocked) {
         loadNextLocked = true
-        
+
         let query = document.querySelector("#addSearchInput").value
         if (query == "") {
             // add more popular
@@ -803,7 +803,7 @@ async function LoadNextAddGamePage() {
 }
 
 function resetAddGame() {
-    document.querySelector("#addgametilecontainer").textContent=''
+    document.querySelector("#addgametilecontainer").textContent = ''
     document.querySelector("#addSearchInput").value = ''
 }
 document.getElementById("addGameModalButton").addEventListener("click", resetAddGame)
@@ -814,9 +814,9 @@ async function addPopularGames(offset = 0) {
 
     let popularIds = await getPopular(offset)
 
-    let body = { Games : popularIds.map(e => {return {id : e}})}
+    let body = { Games: popularIds.map(e => { return { id: e } }) }
     preloadCovers(body)
-    
+
     preloadGameFields(popularIds, ['name']).then(() => {
         createAddGameTiles(popularIds.map(id => new GameInfo(id, gameFieldsMap.get(id).name, Date.now())))
     })
@@ -839,12 +839,12 @@ function onAddGameScrollEnd(divEl) {
 document.getElementById("addGameScrollDiv").addEventListener("scrollend", ev => onAddGameScrollEnd(ev.srcElement))
 
 let viewSettings = {
-    groupBy : "",
-    sortBy : "",
-    sortDir : "asc",
-    showfields : [],
-    tileDisplay : "crop",
-    tileSize : 200
+    groupBy: "",
+    sortBy: "",
+    sortDir: "asc",
+    showfields: [],
+    tileDisplay: "crop",
+    tileSize: 200
 }
 
 let sortMethods = []
@@ -911,12 +911,12 @@ export class GroupMethod {
 
     static Category(inDisplayName) {
         return {
-            displayName : inDisplayName,
-            tiles : [],
-            push : function(tile) {
+            displayName: inDisplayName,
+            tiles: [],
+            push: function (tile) {
                 this.tiles.push(tile)
             },
-            toString : function() {
+            toString: function () {
                 return this.displayName
             }
         }
@@ -1002,9 +1002,9 @@ export function registerGameTileVisual(name, displayName, methodAsyncFn, applies
 }
 
 export const ViewModalExtensionType = Object.freeze({
-    Main : 'main',
-    Sidebar : 'sidebar',
-    SidebarTop : 'sidebar-top',
+    Main: 'main',
+    Sidebar: 'sidebar',
+    SidebarTop: 'sidebar-top',
 })
 
 let viewModalExtensions = []
@@ -1069,8 +1069,8 @@ function getLinkButton(url) {
 }
 
 const viewSettingsVersion = Object.freeze({
-    VersionIntroduced : 1,
-    PlayDataIntroduced : 2
+    VersionIntroduced: 1,
+    PlayDataIntroduced: 2
 })
 
 function tryLoadViewSettings() {
@@ -1090,7 +1090,7 @@ function tryLoadViewSettings() {
     if (viewSettings.version === undefined) {
         viewSettings.version = viewSettingsVersion.VersionIntroduced
     }
-    
+
     if (viewSettings.version < viewSettingsVersion.PlayDataIntroduced) {
         if (!viewSettings.showfields.includes("playdata")) {
             viewSettings.showfields.push("playdata")
@@ -1100,7 +1100,7 @@ function tryLoadViewSettings() {
     }
 
     applyTileDisplaySetting()
-    
+
     let tileSizeInput = document.querySelector("#tileSizeInput")
     tileSizeInput.value = viewSettings.tileSize
     setTileSize(tileSizeInput)
@@ -1279,7 +1279,7 @@ async function populateViewGameModalWithGame(id, titleText) {
     setElementVisibility(addButton, registeredPlaylistIds.indexOf(id) == -1)
     setElementVisibility(removeButton, registeredPlaylistIds.indexOf(id) != -1)
 
-    viewCancelNoteButtonClicked({srcElement:resetNoteButton})
+    viewCancelNoteButtonClicked({ srcElement: resetNoteButton })
 
     let hltb = preloadHowLongToBeat([id])
     await preloadGameFields([id], ['name', 'summary', 'videos', 'first_release_date', 'platforms', 'franchises', 'url'], game => {
@@ -1289,7 +1289,7 @@ async function populateViewGameModalWithGame(id, titleText) {
             game['first_release_date'] *= 1000
         return game
     })
-    
+
     let gameInfo = gameFieldsMap.get(id)
     if (gameInfo) {
         if (gameInfo.name)
@@ -1307,7 +1307,7 @@ async function populateViewGameModalWithGame(id, titleText) {
     let carousel = videoContainer.appendChild(document.createElement("div"))
     carousel.setAttribute("id", "viewVideoCarousel")
     carousel.setAttribute("class", "carousel slide")
-    
+
     carousel.addEventListener('slide.bs.carousel', () => {
         let c = document.getElementById("viewVideoCarousel")
         let v = c.querySelector(".carousel-item.active iframe")
@@ -1316,7 +1316,7 @@ async function populateViewGameModalWithGame(id, titleText) {
 
     let carouselIndicators = carousel.appendChild(document.createElement("div"))
     carouselIndicators.setAttribute("class", "carousel-indicators")
-    
+
     let carouselInner = carousel.appendChild(document.createElement("div"))
     carouselInner.setAttribute("class", "carousel-inner")
 
@@ -1332,13 +1332,13 @@ async function populateViewGameModalWithGame(id, titleText) {
                 indicator.setAttribute("class", "active")
                 indicator.setAttribute("aria-current", "true")
             }
-            
+
             let carouselitem = carouselInner.appendChild(document.createElement("div"))
             if (carouselInner.childElementCount == 1)
                 carouselitem.setAttribute("class", "carousel-item active")
             else
-            carouselitem.setAttribute("class", "carousel-item")
-        
+                carouselitem.setAttribute("class", "carousel-item")
+
             let frame = carouselitem.appendChild(document.createElement("iframe"))
             frame.setAttribute("class", `gamevideo rounded-5`)
             frame.setAttribute("src", `https://www.youtube.com/embed/${video}`)
@@ -1359,7 +1359,7 @@ async function populateViewGameModalWithGame(id, titleText) {
     if (gameInfo.summary) {
         modal.querySelector('#description').textContent = gameInfo.summary
     }
-    
+
     if (gameInfo.first_release_date) {
         let releaseDate = modal.querySelector('#releasedate')
         if (gameInfo.first_release_date == 'TBA') {
@@ -1415,7 +1415,7 @@ async function populateViewGameModalWithGame(id, titleText) {
 
         for (let website of gameInfo.websites) {
             let linkContent = getLinkButton(website.url)
-            
+
             websites.innerHTML += `<a href="${website.url}" target="_blank">${linkContent}</a>`
 
             if (website.url.match(/\/\/(.*?)(?:\/|$)/)[1] == "store.steampowered.com") {
@@ -1434,13 +1434,13 @@ async function populateViewGameModalWithGame(id, titleText) {
 
     if (gameInfo.franchises) {
         let franchises = await loadFranchise(gameInfo.franchises)
-        let gameIds = franchises.map(f => f.games).reduce((t, c)=>t.concat(c))
-        await preloadGameFields(gameIds, ['name'],e=>e , [0])
-        preloadCovers(gameIds.reduce((t,c) => {
+        let gameIds = franchises.map(f => f.games).reduce((t, c) => t.concat(c))
+        await preloadGameFields(gameIds, ['name'], e => e, [0])
+        preloadCovers(gameIds.reduce((t, c) => {
             if (t.Games)
-                t.Games.push({id:c})
+                t.Games.push({ id: c })
             else
-                t = {Games:[{id:c}]}
+                t = { Games: [{ id: c }] }
             return t
         }))
         let franchiseCard = modal.querySelector("#franchisecard")
@@ -1464,8 +1464,8 @@ async function populateViewGameModalWithGame(id, titleText) {
 
     hltb = (await hltb).get(id)
     if (hltb) {
-        let formatter = new Intl.DurationFormat("en", {style: "narrow"})
-        let format = (h => h == 0 ? "-" : formatter.format({hours:Math.round(h)}))
+        let formatter = new Intl.DurationFormat("en", { style: "narrow" })
+        let format = (h => h == 0 ? "-" : formatter.format({ hours: Math.round(h) }))
 
         modal.querySelector('#howlongtobeat').setAttribute("href", hltb.url)
         modal.querySelector('#hltbMain').textContent = format(hltb.main)
@@ -1530,7 +1530,7 @@ async function spreadsheetGen(gameId, platformSlug) {
 
     let today = new Date(Date.now())
     today = shortDateFormat.format(today)
-    
+
     let spreadsheetString = `${today}\t\t\t${gameInfo.name}\t${release}\t\t${platform}\tNo\tNo\tNo`
     navigator.clipboard.writeText(spreadsheetString)
 }
@@ -1578,7 +1578,7 @@ function loadConfigFromLocalStorage() {
     else {
         config.serveraddress = ""
     }
-    
+
     let userName = localStorage.getItem("userDisplayName")
     if (userName != null) {
         config.userName = userName
@@ -1586,7 +1586,7 @@ function loadConfigFromLocalStorage() {
     else {
         config.userName = ""
     }
-    
+
     let playlistName = localStorage.getItem("playlistName")
     if (playlistName != null) {
         config.playlistName = playlistName
@@ -1664,12 +1664,12 @@ async function screenshotPlaylist() {
     let container = document.querySelector("#gametilecontainer")
     let columns = Math.trunc(Math.sqrt(container.children.length))
     if (viewSettings.tileDisplay == "full") {
-        columns = Math.trunc(columns * (350/260))
+        columns = Math.trunc(columns * (350 / 260))
     }
 
     container.setAttribute("style", `max-width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px !important; width:${Math.max(500, columns * ((Number(viewSettings.tileSize) + 16)))}px !important`)
-    let dataUrl = await domtoimage.toPng(container, {bgcolor:"#212529"})
-    
+    let dataUrl = await domtoimage.toPng(container, { bgcolor: "#212529" })
+
     const now = new Date()
     let link = document.createElement('a')
     link.download = `Playlist-${config.playlistName}-${now.getMonth()}-${now.getDay()}-${now.getFullYear()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.png`
