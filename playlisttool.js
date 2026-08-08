@@ -143,7 +143,7 @@ function setTileSize(tileSizeInput) {
     document.documentElement.style.setProperty("--gametile-size", `${tileSizeInput.value}px`)
     tileSizeInput.parentElement.querySelector('label').textContent = `Tile Size: ${tileSizeInput.value}`
 }
-document.getElementById("tileSizeInput").addEventListener("input", ev => setTileSize(ev.srcElement))
+document.getElementById("tileSizeInput").addEventListener("input", ev => setTileSize(ev.target))
 
 function addButtonClicked(addButton, id, title) {
     if (registeredPlaylistIds.indexOf(id) == -1) {
@@ -836,7 +836,7 @@ function onAddGameScrollEnd(divEl) {
         LoadNextAddGamePage()
     }
 }
-document.getElementById("addGameScrollDiv").addEventListener("scrollend", ev => onAddGameScrollEnd(ev.srcElement))
+document.getElementById("addGameScrollDiv").addEventListener("scrollend", ev => onAddGameScrollEnd(ev.target))
 
 let viewSettings = {
     groupBy: "",
@@ -1204,7 +1204,7 @@ function resetViewGameModal() {
 }
 
 function viewAddRemoveButtonClicked(ev) {
-    let button = ev.srcElement
+    let button = ev.target
     let id = Number(button.getAttribute("gameId"))
     let title = button.getAttribute("gameTitle")
     if (button.getAttribute("id") == "viewaddbutton") {
@@ -1226,7 +1226,7 @@ function onNotesInput() {
 }
 
 async function viewCancelNoteButtonClicked(ev) {
-    let button = ev.srcElement
+    let button = ev.target
     let id = Number(button.getAttribute("gameId"))
     let note = document.querySelector("#notes")
 
@@ -1238,7 +1238,7 @@ async function viewCancelNoteButtonClicked(ev) {
 document.getElementById("cancelNote").addEventListener("click", viewCancelNoteButtonClicked)
 
 function viewSaveNoteButtonClicked(ev) {
-    let button = ev.srcElement
+    let button = ev.target
     let id = Number(button.getAttribute("gameId"))
     let note = document.querySelector("#notes")
 
@@ -1250,7 +1250,7 @@ function viewSaveNoteButtonClicked(ev) {
 document.getElementById("saveNote").addEventListener("click", viewSaveNoteButtonClicked)
 
 async function populateViewGameModal(ev) {
-    let viewButton = ev.srcElement
+    let viewButton = ev.target
     let gameTile = viewButton.closest(".gametile")
     let titleText = gameTile.querySelector(".gametitle").textContent
     let id = Number(gameTile.getAttribute("gameid"))
@@ -1279,7 +1279,7 @@ async function populateViewGameModalWithGame(id, titleText) {
     setElementVisibility(addButton, registeredPlaylistIds.indexOf(id) == -1)
     setElementVisibility(removeButton, registeredPlaylistIds.indexOf(id) != -1)
 
-    viewCancelNoteButtonClicked({ srcElement: resetNoteButton })
+    viewCancelNoteButtonClicked({ target: resetNoteButton })
 
     let hltb = preloadHowLongToBeat([id])
     await preloadGameFields([id], ['name', 'summary', 'videos', 'first_release_date', 'platforms', 'franchises', 'url'], game => {
@@ -1616,7 +1616,7 @@ function loadConfigFromLocalStorage() {
         let a = document.createElement("a")
         a.setAttribute("class", "dropdown-item")
         a.innerHTML = `${e}`
-        a.addEventListener("click", ev => prevServerClicked(ev.srcElement))
+        a.addEventListener("click", ev => prevServerClicked(ev.target))
 
         let li = document.createElement("li")
         li.appendChild(a)
@@ -1630,7 +1630,7 @@ function loadConfigFromLocalStorage() {
         let a = document.createElement("a")
         a.setAttribute("class", "dropdown-item")
         a.innerHTML = `${e}`
-        a.addEventListener("click", ev => prevPlaylistClicked(ev.srcElement))
+        a.addEventListener("click", ev => prevPlaylistClicked(ev.target))
 
         let li = document.createElement("li")
         li.appendChild(a)
