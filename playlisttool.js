@@ -458,7 +458,6 @@ export async function preloadPlatformMetaInfo() {
                     ids.push(id)
     }
     ids = [...new Set(ids)]
-    ids.sort()
 
     let doFetch = async function (withIds) {
         let response = await postServer({
