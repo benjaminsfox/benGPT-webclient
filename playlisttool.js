@@ -454,9 +454,10 @@ export async function preloadPlatformMetaInfo() {
     for (let gameInfo of gameFieldsMap) {
         if (gameInfo[1].platforms)
             for (let id of gameInfo[1].platforms)
-                if (!platformMetaMap.has(id) && !ids.has(id))
+                if (!platformMetaMap.has(id))
                     ids.push(id)
     }
+    ids = [...new Set(ids)]
     ids.sort()
 
     let doFetch = async function (withIds) {
