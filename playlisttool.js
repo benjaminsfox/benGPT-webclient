@@ -1261,7 +1261,10 @@ async function populateViewGameModalWithGame(id, titleText) {
     let modal = document.querySelector("#viewGameModal")
     modal.setAttribute("gameId", id)
     resetViewGameModal()
-    await (new bootstrap.Modal("#viewGameModal")).show()
+
+    if (!modal.classList.contains("show")) {
+        await (new bootstrap.Modal("#viewGameModal")).show()
+    }
 
     let title = modal.querySelector(".modal-title")
     title.textContent = titleText
