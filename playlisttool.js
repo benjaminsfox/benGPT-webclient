@@ -371,6 +371,13 @@ export async function preloadHowLongToBeat(ids = [...document.getElementsByClass
     return howLongToBeatMap
 }
 
+export async function preloadOrFindHowLongToBeat(id) {
+    if (howLongToBeatMap.has(id))
+        return howLongToBeatMap
+
+    return preloadHowLongToBeat()
+}
+
 let videosMap = new Map()
 export async function preloadVideos() {
     let ids = []

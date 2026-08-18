@@ -197,8 +197,8 @@ async function addPlatformIconsToTile(tile) {
 pl.registerGameTileVisual("platform", "Platforms", addPlatformIconsToTile, true, true)
 
 async function addTimeToBeatToTile(tile) {
-    let hltbinfo = await pl.preloadHowLongToBeat()
     let id = Number(tile.getAttribute("gameid"))
+    let hltbinfo = await pl.preloadOrFindHowLongToBeat(id)
 
     let formatter = new Intl.DurationFormat("en", {style: "narrow"})
     let format = (h => h == 0 ? "-" : formatter.format({hours:Math.round(h)}))
